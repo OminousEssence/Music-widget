@@ -130,26 +130,45 @@ PlasmoidItem {
 
 
     fullRepresentation: Item {
-        Layout.preferredWidth: 200
-        Layout.preferredHeight: 200
-        Layout.minimumWidth: 180
-        Layout.minimumHeight: 180
-        Layout.maximumWidth: 400
-        Layout.maximumHeight: 400
-        
-        Layout.fillWidth: true 
+        id: fullRepItem
+        readonly property double fontScale: Plasmoid.configuration.widgetScale > 0 ? Plasmoid.configuration.widgetScale : 1.0
+
+        Layout.preferredWidth: Math.round(200 * fontScale)
+        Layout.preferredHeight: Math.round(200 * fontScale)
+        Layout.minimumWidth: Math.round(180 * fontScale)
+        Layout.minimumHeight: Math.round(180 * fontScale)
+        Layout.maximumWidth: Math.round(400 * fontScale)
+        Layout.maximumHeight: Math.round(400 * fontScale)
+
+        Layout.fillWidth: true
         Layout.fillHeight: true
+
+        // Compute corner radius from mode string (mirrors weather widget logic)
+        readonly property real computedRadius: {
+            var mode = Plasmoid.configuration.cornerRadius || "normal"
+            if (mode === "square") return 0
+            if (mode === "small")  return 8
+            return 20 // "normal"
+        }
+
+        // Compute background opacity:
+        // -1.0 ("No Backgrounds") -> full transparent (alpha 0), content stays visible
+        readonly property double bgOpacity: {
+            var op = Plasmoid.configuration.backgroundOpacity
+            if (op === -1.0) return 0.0
+            return (op !== undefined) ? op : 1.0
+        }
 
         Rectangle {
             id: background
             anchors.fill: parent
-            radius: Plasmoid.configuration.widgetRadius !== undefined ? Plasmoid.configuration.widgetRadius : 20
-            anchors.margins: Plasmoid.configuration.edgeMargin !== undefined ? Plasmoid.configuration.edgeMargin : 10
-            color: root.bgColor
+            radius: parent.computedRadius
+            anchors.margins: Math.round((Plasmoid.configuration.edgeMargin !== undefined ? Plasmoid.configuration.edgeMargin : 10) * fullRepItem.fontScale)
+            color: Qt.rgba(root.bgColor.r, root.bgColor.g, root.bgColor.b, parent.bgOpacity)
             
-            // Görünüm Modunu Belirle
-            readonly property bool showTwoColumns: width >= 380
-            readonly property bool showTwoRows: height > 350
+            // Görünüm Modunu Belirle (eşikler scale ile büyür)
+            readonly property bool showTwoColumns: width >= Math.round(380 * fullRepItem.fontScale)
+            readonly property bool showTwoRows: height > Math.round(350 * fullRepItem.fontScale)
 
             // Calendar 2 Visibility: Show if 2 Columns
             readonly property bool showSecondCalendar: showTwoColumns
@@ -161,17 +180,15 @@ PlasmoidItem {
             QQC2.SwipeView {
                 id: swipeView
                 anchors.fill: parent
-                // Arkaplanın marginlerine göre içerik de marginli olsun ancak
-                // clip parent'ta yapıldığı için burada padding verelim.
-                topPadding: 10
-                bottomPadding: 10
-                leftPadding: 10
-                rightPadding: 10
-                
+                topPadding: Math.round(10 * fullRepItem.fontScale)
+                bottomPadding: Math.round(10 * fullRepItem.fontScale)
+                leftPadding: Math.round(10 * fullRepItem.fontScale)
+                rightPadding: Math.round(10 * fullRepItem.fontScale)
+
                 clip: true
                 orientation: Qt.Vertical
                 currentIndex: 6 // 0. index = -6. ay. 6. index = 0. ay (Bugün)
-                spacing: 60 // Sayfalar arası boşluk
+                spacing: Math.round(60 * fullRepItem.fontScale) // Sayfalar arası boşluk
 
                 // -6 aydan +12 aya kadar toplam 19 sayfa
                 Repeater {
@@ -189,14 +206,14 @@ PlasmoidItem {
 
                         ColumnLayout {
                             anchors.fill: parent
-                            spacing: 5 
+                            spacing: Math.round(5 * fullRepItem.fontScale)
 
                             // --- 1. SATIR (Month 1 & Month 2) ---
                             RowLayout {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredHeight: 1
-                                spacing: 10
+                                spacing: Math.round(10 * fullRepItem.fontScale)
 
                                 // Cal 1
                                 CalendarView {
@@ -204,13 +221,14 @@ PlasmoidItem {
                                     Layout.fillHeight: true
                                     Layout.preferredWidth: 1
                                     Layout.preferredHeight: 1
-                                    
+
                                     monthLabel: pageItem.month1.label
                                     titleFont: "Roboto Condensed"
                                     displayYear: pageItem.month1.year
                                     currentMonthIndex: pageItem.month1.monthIndex
                                     calendarCells: pageItem.month1.cells
                                     weekdayLabels: root.weekdayLabels
+                                    fontScale: fullRepItem.fontScale
                                     textColor: root.textColor
                                     accentColor: root.accentColor
                                     highlightedTextColor: root.highlightedTextColor
@@ -234,13 +252,14 @@ PlasmoidItem {
                                     Layout.fillHeight: true
                                     Layout.preferredWidth: 1
                                     Layout.preferredHeight: 1
-                                    
+
                                     monthLabel: pageItem.month2.label
                                     titleFont: "Roboto Condensed"
                                     displayYear: pageItem.month2.year
                                     currentMonthIndex: pageItem.month2.monthIndex
                                     calendarCells: pageItem.month2.cells
                                     weekdayLabels: root.weekdayLabels
+                                    fontScale: fullRepItem.fontScale
                                     textColor: root.textColor
                                     accentColor: root.accentColor
                                     highlightedTextColor: root.highlightedTextColor
@@ -290,7 +309,7 @@ PlasmoidItem {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredHeight: 1 // Weight 1 if visible
-                                spacing: 20
+                                spacing: Math.round(20 * fullRepItem.fontScale)
 
                                 // Cal 3
                                 CalendarView {
@@ -305,6 +324,7 @@ PlasmoidItem {
                                     currentMonthIndex: pageItem.month3.monthIndex
                                     calendarCells: pageItem.month3.cells
                                     weekdayLabels: root.weekdayLabels
+                                    fontScale: fullRepItem.fontScale
                                     textColor: root.textColor
                                     accentColor: root.accentColor
                                     highlightedTextColor: root.highlightedTextColor
@@ -335,6 +355,7 @@ PlasmoidItem {
                                     currentMonthIndex: pageItem.month4.monthIndex
                                     calendarCells: pageItem.month4.cells
                                     weekdayLabels: root.weekdayLabels
+                                    fontScale: fullRepItem.fontScale
                                     textColor: root.textColor
                                     accentColor: root.accentColor
                                     highlightedTextColor: root.highlightedTextColor
@@ -366,18 +387,18 @@ PlasmoidItem {
                 id: todayButton
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.topMargin: 10
-                anchors.rightMargin: 15
-                width: todayText.contentWidth + 16
-                height: 26
-                radius: 6
+                anchors.topMargin: Math.round(10 * fullRepItem.fontScale)
+                anchors.rightMargin: Math.round(15 * fullRepItem.fontScale)
+                width: todayText.contentWidth + Math.round(16 * fullRepItem.fontScale)
+                height: Math.round(26 * fullRepItem.fontScale)
+                radius: Math.round(6 * fullRepItem.fontScale)
                 color: root.accentColor
                 z: 100 // Üstte kalmasını sağlar
-                
+
                 // Bugün sayfasındaysak (index 6) gizle, değilse göster
                 opacity: swipeView.currentIndex === 6 ? 0 : 1
-                visible: opacity > 0 // Görünmezken tıklamayı engelle (optional optimization)
-                
+                visible: opacity > 0 // Görünmezken tıklamayı engelle
+
                 Behavior on opacity {
                     NumberAnimation { duration: 350 }
                 }
@@ -387,7 +408,7 @@ PlasmoidItem {
                     anchors.centerIn: parent
                     text: i18n("Today")
                     font.family: "Sans Serif"
-                    font.pixelSize: 11
+                    font.pixelSize: Math.round(11 * fullRepItem.fontScale)
                     font.weight: Font.Bold
                     color: root.highlightedTextColor
                 }

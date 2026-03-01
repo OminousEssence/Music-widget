@@ -7,7 +7,8 @@ ColumnLayout {
     property string monthLabel
     property var calendarCells: []
     property var weekdayLabels: []
-    
+    property double fontScale: 1.0
+
     // Parent'tan alınacak renkler
     property color textColor: "#ffffff"
     property color accentColor: "#d71921"
@@ -26,18 +27,15 @@ ColumnLayout {
     // --- HEADER ---
     Item {
         Layout.fillWidth: true
-        Layout.preferredHeight: 20 // Text yüksekliği kadar
+        Layout.preferredHeight: Math.round(28 * calendarLayout.fontScale) // font 24px + breathing room
 
         Text {
             anchors.left: parent.left
-            // Align with the visual start of the first column's content (centered)
-            // Column width is parent.width / 7. Center is at w/14.
-            // Text content (like 'P' or '23') is centered. Assume approx half-width is 8px.
             anchors.leftMargin: Math.max(0, (parent.width / 7) / 2 - 8)
             anchors.verticalCenter: parent.verticalCenter
             text: monthLabel
             font.family: titleFont
-            font.pixelSize: 24
+            font.pixelSize: Math.round(24 * calendarLayout.fontScale)
             font.weight: Font.Bold
             font.letterSpacing: 2
             color: calendarLayout.accentColor
@@ -49,7 +47,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             text: displayYear
             font.family: titleFont
-            font.pixelSize: 15
+            font.pixelSize: Math.round(15 * calendarLayout.fontScale)
             font.weight: Font.Bold
             font.italic: true
             font.letterSpacing: 1
@@ -83,7 +81,7 @@ ColumnLayout {
                         anchors.centerIn: parent
                         text: modelData
                         font.family: "Roboto Condensed"
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * calendarLayout.fontScale)
                         font.weight: Font.DemiBold
                         color: calendarLayout.completedColor
                         opacity: 0.7
@@ -116,11 +114,11 @@ ColumnLayout {
                     Rectangle {
                         id: highlightRect
                         anchors.centerIn: parent
-                        
-                        width: 24
-                        height: 24
-                        radius: 6
-                        
+
+                        width: Math.round(24 * calendarLayout.fontScale)
+                        height: Math.round(24 * calendarLayout.fontScale)
+                        radius: Math.round(6 * calendarLayout.fontScale)
+
                         color: calendarLayout.accentColor
                         visible: cellData.isToday
                     }
@@ -141,7 +139,7 @@ ColumnLayout {
                         anchors.centerIn: parent
                         text: cellData.day
                         font.family: "Roboto Condensed"
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * calendarLayout.fontScale)
                         font.weight: cellData.isToday ? Font.Bold : Font.Normal
                         // Change text color if selected (handled below or via condition)
                         readonly property bool isSelected: {

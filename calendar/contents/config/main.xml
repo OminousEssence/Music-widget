@@ -14,5 +14,17 @@
       <default>20</default>
       <label>Widget Radius</label>
     </entry>
+    <entry name="cornerRadius" type="String">
+      <default>normal</default>
+      <label>Corner Radius Mode (normal, small, square)</label>
+    </entry>
+    <entry name="backgroundOpacity" type="Double">
+      <default>1.0</default>
+      <label>Background Opacity</label>
+    </entry>
+    <entry name="widgetScale" type="Double">
+      <default>1.0</default>
+      <label>Widget Scale Multiplier</label>
+    </entry>
   </group>
 </kcfg>

@@ -5,83 +5,163 @@ import org.kde.kirigami as Kirigami
 
 Item {
     id: configAppearance
-    
+
     property string title: i18n("Appearance")
-    
-    // Config binding
+
+    // Config bindings
     property int cfg_edgeMargin
     property int cfg_widgetRadius
-    
+    property string cfg_cornerRadius
+    property double cfg_backgroundOpacity
+    property double cfg_widgetScale
+
     // Default values
     property int cfg_edgeMarginDefault: 10
     property int cfg_widgetRadiusDefault: 20
-    
+    property string cfg_cornerRadiusDefault: "normal"
+    property double cfg_backgroundOpacityDefault: 1.0
+    property double cfg_widgetScaleDefault: 1.0
+
+    function getOpacityIndex(val) {
+        var bestIdx = 0
+        var minDiff = 100
+        for (var i = 0; i < opacityCombo.opacityValues.length; i++) {
+            var diff = Math.abs(val - opacityCombo.opacityValues[i])
+            if (diff < minDiff) {
+                minDiff = diff
+                bestIdx = i
+            }
+        }
+        return bestIdx
+    }
+
     implicitHeight: layout.implicitHeight
-    
+
     ColumnLayout {
         id: layout
         anchors.left: parent.left
         anchors.right: parent.right
         spacing: 15
-        
+
         GroupBox {
             title: i18n("Appearance")
             Layout.fillWidth: true
-            
+
             ColumnLayout {
                 width: parent.width
                 spacing: 10
-                
+
                 Label {
                     text: i18n("Widget Margin:")
                     font.bold: true
                 }
-                
+
                 ComboBox {
                     id: edgeMarginCombo
                     Layout.fillWidth: true
                     model: [i18n("Normal (10px)"), i18n("Less (5px)"), i18n("None (0px)")]
-                    
+
                     onCurrentIndexChanged: {
                         if (currentIndex === 0) configAppearance.cfg_edgeMargin = 10
                         else if (currentIndex === 1) configAppearance.cfg_edgeMargin = 5
                         else if (currentIndex === 2) configAppearance.cfg_edgeMargin = 0
                     }
                 }
-                
+
                 Label {
-                    text: i18n("Widget Radius:")
+                    text: i18n("Corner Radius:")
                     font.bold: true
                 }
-                
+
                 ComboBox {
-                    id: widgetRadiusCombo
+                    id: cornerRadiusCombo
                     Layout.fillWidth: true
-                    model: [i18n("Normal (20px)"), i18n("Less (10px)"), i18n("None (0px)")]
-                    
+                    model: [i18n("Normal"), i18n("Small"), i18n("Square")]
+
                     onCurrentIndexChanged: {
-                        if (currentIndex === 0) configAppearance.cfg_widgetRadius = 20
-                        else if (currentIndex === 1) configAppearance.cfg_widgetRadius = 10
-                        else if (currentIndex === 2) configAppearance.cfg_widgetRadius = 0
+                        if (currentIndex === 0) configAppearance.cfg_cornerRadius = "normal"
+                        else if (currentIndex === 1) configAppearance.cfg_cornerRadius = "small"
+                        else if (currentIndex === 2) configAppearance.cfg_cornerRadius = "square"
+                    }
+                }
+
+                Label {
+                    text: i18n("Widget Size:")
+                    font.bold: true
+                }
+
+                ComboBox {
+                    id: widgetScaleCombo
+                    Layout.fillWidth: true
+                    model: ["1.0x", "1.25x", "1.5x", "1.75x", "2.0x", "2.25x", "2.5x"]
+
+                    property var scaleValues: [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
+
+                    onCurrentIndexChanged: {
+                        configAppearance.cfg_widgetScale = scaleValues[currentIndex]
+                    }
+                }
+
+                Label {
+                    text: i18n("Larger sizes help readability on 2K/4K displays.")
+                    font.pixelSize: 10
+                    opacity: 0.7
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+            }
+        }
+
+        GroupBox {
+            title: i18n("Background Settings")
+            Layout.fillWidth: true
+
+            ColumnLayout {
+                width: parent.width
+                spacing: 10
+
+                Label {
+                    text: i18n("Background Opacity:")
+                    font.bold: true
+                }
+
+                ComboBox {
+                    id: opacityCombo
+                    Layout.fillWidth: true
+                    model: ["100%", "75%", "50%", "25%", "10%", "5%", i18n("0% (No Backgrounds)")]
+
+                    property var opacityValues: [1.0, 0.75, 0.5, 0.25, 0.1, 0.05, -1.0]
+
+                    onCurrentIndexChanged: {
+                        configAppearance.cfg_backgroundOpacity = opacityValues[currentIndex]
                     }
                 }
             }
         }
     }
-    
+
     Component.onCompleted: {
-         // Initialize Edge Margin
-         var margin = cfg_edgeMargin
-         if (margin === 10) edgeMarginCombo.currentIndex = 0
-         else if (margin === 5) edgeMarginCombo.currentIndex = 1
-         else if (margin === 0) edgeMarginCombo.currentIndex = 2
-         else edgeMarginCombo.currentIndex = 0
-         
-         // Initialize Widget Radius
-         var radius = cfg_widgetRadius
-         if (radius === 20) widgetRadiusCombo.currentIndex = 0
-         else if (radius === 10) widgetRadiusCombo.currentIndex = 1
-         else if (radius === 0) widgetRadiusCombo.currentIndex = 2
-         else widgetRadiusCombo.currentIndex = 0
+        // Initialize Edge Margin
+        var margin = cfg_edgeMargin
+        if (margin === 10) edgeMarginCombo.currentIndex = 0
+        else if (margin === 5) edgeMarginCombo.currentIndex = 1
+        else if (margin === 0) edgeMarginCombo.currentIndex = 2
+        else edgeMarginCombo.currentIndex = 0
+
+        // Initialize Corner Radius
+        var radiusMode = cfg_cornerRadius || "normal"
+        if (radiusMode === "normal") cornerRadiusCombo.currentIndex = 0
+        else if (radiusMode === "small") cornerRadiusCombo.currentIndex = 1
+        else if (radiusMode === "square") cornerRadiusCombo.currentIndex = 2
+        else cornerRadiusCombo.currentIndex = 0
+
+        // Initialize Widget Scale
+        var scale = cfg_widgetScale || 1.0
+        var scaleIdx = widgetScaleCombo.scaleValues.indexOf(scale)
+        widgetScaleCombo.currentIndex = scaleIdx >= 0 ? scaleIdx : 0
+
+        // Initialize Background Opacity
+        var currentOp = (cfg_backgroundOpacity !== undefined) ? cfg_backgroundOpacity : 1.0
+        opacityCombo.currentIndex = getOpacityIndex(currentOp)
     }
 }
