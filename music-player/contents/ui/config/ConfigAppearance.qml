@@ -3,9 +3,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+Item {
     id: configAppearance
-    
+
     // Config binding
     property int cfg_edgeMargin
     property int cfg_widgetRadius
@@ -26,7 +26,11 @@ Kirigami.FormLayout {
     property bool cfg_showShuffleButton
     property bool cfg_showLoopButton
     property bool cfg_showSeekButtons
-    
+    property bool cfg_showVolumeSlider
+    property bool cfg_panelShowAlbumArt
+    property bool cfg_autoHideWhenInactive
+    property bool cfg_hideWhenNotPlaying
+
     // Default values (required for Defaults button)
     property int cfg_edgeMarginDefault: 10
     property int cfg_widgetRadiusDefault: 20
@@ -47,16 +51,73 @@ Kirigami.FormLayout {
     property bool cfg_showShuffleButtonDefault: false
     property bool cfg_showLoopButtonDefault: false
     property bool cfg_showSeekButtonsDefault: true
-    
-    // General config (to silence property warnings - handled by ConfigGeneral)
+    property bool cfg_showVolumeSliderDefault: false
+    property bool cfg_panelShowAlbumArtDefault: false
+    property bool cfg_autoHideWhenInactiveDefault: false
+    property bool cfg_hideWhenNotPlayingDefault: false
+
+    // General config shadow properties (to silence property warnings)
     property string cfg_preferredPlayer
     property string cfg_preferredPlayerDefault: ""
     property bool cfg_showPlayerBadge
     property bool cfg_showPlayerBadgeDefault: false
-    
+
     // Title for tab
     property string title: i18n("Appearance")
-    
+
+    function syncSettings() {
+         var margin = cfg_edgeMargin
+         if (margin === 10) edgeMarginCombo.currentIndex = 0
+         else if (margin === 5) edgeMarginCombo.currentIndex = 1
+         else if (margin === 0) edgeMarginCombo.currentIndex = 2
+         else edgeMarginCombo.currentIndex = 0
+
+         var radius = cfg_widgetRadius
+         if (radius === 20) radiusCombo.currentIndex = 0
+         else if (radius === 10) radiusCombo.currentIndex = 1
+         else if (radius === 5) radiusCombo.currentIndex = 2
+         else if (radius === 0) radiusCombo.currentIndex = 3
+         else radiusCombo.currentIndex = 0
+
+         panelLayoutCombo.currentIndex = cfg_panelLayoutMode
+
+         var mode = cfg_popupLayoutMode
+         var pCombo = popupLayoutCombo
+         if (pCombo.isInPanel) {
+             if (mode === 2) pCombo.currentIndex = 1
+             else if (mode === 3) pCombo.currentIndex = 2
+             else if (mode === 4) pCombo.currentIndex = 3
+             else pCombo.currentIndex = 0
+         } else {
+             if (mode >= 0 && mode <= 4) pCombo.currentIndex = mode
+             else pCombo.currentIndex = 0
+         }
+
+         var currentOp = cfg_backgroundOpacity
+         var closestIdx = 0
+         var minDiff = 100
+         for (var i = 0; i < opacityCombo.opacityValues.length; i++) {
+             var diff = Math.abs(currentOp - opacityCombo.opacityValues[i])
+             if (diff < minDiff) { minDiff = diff; closestIdx = i }
+         }
+         opacityCombo.currentIndex = closestIdx
+         scrollSpeedCombo.currentIndex = cfg_panelScrollingSpeed
+    }
+
+    onCfg_edgeMarginChanged: syncSettings()
+    onCfg_widgetRadiusChanged: syncSettings()
+    onCfg_backgroundOpacityChanged: syncSettings()
+    Component.onCompleted: syncSettings()
+
+    ScrollView {
+        anchors.fill: parent
+        contentWidth: availableWidth
+        clip: true
+
+    Kirigami.FormLayout {
+        id: innerForm
+        width: parent.availableWidth
+
     // Appearance Section
     Kirigami.Separator {
         Kirigami.FormData.isSection: true
@@ -288,55 +349,85 @@ Kirigami.FormLayout {
         }
         opacity: enabled ? 1.0 : 0.5
     }
-    
-    function syncSettings() {
-         var margin = cfg_edgeMargin
-         if (margin === 10) edgeMarginCombo.currentIndex = 0
-         else if (margin === 5) edgeMarginCombo.currentIndex = 1
-         else if (margin === 0) edgeMarginCombo.currentIndex = 2
-         else edgeMarginCombo.currentIndex = 0
-         
-         var radius = cfg_widgetRadius
-         if (radius === 20) radiusCombo.currentIndex = 0
-         else if (radius === 10) radiusCombo.currentIndex = 1
-         else if (radius === 5) radiusCombo.currentIndex = 2
-         else if (radius === 0) radiusCombo.currentIndex = 3
-         else radiusCombo.currentIndex = 0
-         
-         panelLayoutCombo.currentIndex = cfg_panelLayoutMode
-         
-         // Sync Layout Mode
-         var mode = cfg_popupLayoutMode
-         var pCombo = popupLayoutCombo
-         
-         if (pCombo.isInPanel) {
-             if (mode === 2) pCombo.currentIndex = 1 // Wide
-             else if (mode === 3) pCombo.currentIndex = 2 // Large
-             else if (mode === 4) pCombo.currentIndex = 3 // ExtraLarge
-             else pCombo.currentIndex = 0 // Auto
-         } else {
-             if (mode >= 0 && mode <= 4) pCombo.currentIndex = mode
-             else pCombo.currentIndex = 0
-         }
 
-         // Sync Opacity
-         var currentOp = cfg_backgroundOpacity
-         var closestIdx = 0
-         var minDiff = 100
-         for (var i = 0; i < opacityCombo.opacityValues.length; i++) {
-             var diff = Math.abs(currentOp - opacityCombo.opacityValues[i])
-             if (diff < minDiff) {
-                 minDiff = diff
-                 closestIdx = i
-             }
-         }
-         opacityCombo.currentIndex = closestIdx
-         
-         scrollSpeedCombo.currentIndex = cfg_panelScrollingSpeed
+    CheckBox {
+        text: i18n("Volume Slider")
+        checked: configAppearance.cfg_showVolumeSlider
+        onCheckedChanged: configAppearance.cfg_showVolumeSlider = checked
+        enabled: {
+            var mode = configAppearance.cfg_popupLayoutMode
+            if (mode === 4) return true
+            if (mode === 0 && popupLayoutCombo.isInPanel) return true
+            return false
+        }
+        opacity: enabled ? 1.0 : 0.5
     }
 
-    onCfg_edgeMarginChanged: syncSettings()
-    onCfg_widgetRadiusChanged: syncSettings()
-    onCfg_backgroundOpacityChanged: syncSettings()
-    Component.onCompleted: syncSettings()
-}
+    // Panel Options Section
+    Kirigami.Separator {
+        Kirigami.FormData.isSection: true
+        Kirigami.FormData.label: i18n("Panel Options")
+    }
+
+    CheckBox {
+        Kirigami.FormData.label: i18n("Album Art") + ":"
+        text: i18n("Show album art thumbnail in panel")
+        checked: configAppearance.cfg_panelShowAlbumArt
+        onCheckedChanged: configAppearance.cfg_panelShowAlbumArt = checked
+        enabled: plasmoid.formFactor === 2 || plasmoid.formFactor === 3
+        opacity: enabled ? 1.0 : 0.5
+    }
+
+    Label {
+        visible: !(plasmoid.formFactor === 2 || plasmoid.formFactor === 3)
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        opacity: 0.5
+        font.pixelSize: 11
+        text: i18n("Only available when widget is placed in a panel.")
+    }
+
+    // Visibility Section
+    Kirigami.Separator {
+        Kirigami.FormData.isSection: true
+        Kirigami.FormData.label: i18n("Visibility")
+    }
+
+    CheckBox {
+        id: autoHideCheckbox
+        Kirigami.FormData.label: i18n("Auto-hide") + ":"
+        text: i18n("Hide when locked player is not active")
+        checked: configAppearance.cfg_autoHideWhenInactive
+        onCheckedChanged: configAppearance.cfg_autoHideWhenInactive = checked
+        enabled: configAppearance.cfg_preferredPlayer !== ""
+        opacity: enabled ? 1.0 : 0.5
+    }
+
+    Label {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        opacity: 0.6
+        font.pixelSize: 11
+        text: configAppearance.cfg_preferredPlayer === ""
+            ? i18n("Requires a locked (specific) player to work.")
+            : i18n("Disappears from panel when \"%1\" is not running.", configAppearance.cfg_preferredPlayer)
+    }
+
+    CheckBox {
+        id: hideWhenNotPlayingCheckbox
+        text: i18n("Hide in panel when nothing is playing")
+        checked: configAppearance.cfg_hideWhenNotPlaying
+        onCheckedChanged: configAppearance.cfg_hideWhenNotPlaying = checked
+    }
+
+    Label {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        opacity: 0.6
+        font.pixelSize: 11
+        text: i18n("Widget disappears from panel when paused or stopped.")
+    }
+
+    } // Kirigami.FormLayout
+    } // ScrollView
+} // Item

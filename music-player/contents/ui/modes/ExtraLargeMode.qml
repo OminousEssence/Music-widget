@@ -49,6 +49,12 @@ Item {
     property bool showLoopButton: true
     property bool showSeekButtons: true
     
+    // Expose badge expansion state
+    readonly property bool badgeExpanded: albumCoverLoader.item ? albumCoverLoader.item.badgeExpanded : false
+    property bool showVolumeSlider: false
+    property real currentVolume: 1.0
+    property var onSetVolume: function(vol) {}
+    
     // Cached colors
     readonly property color buttonBgColor: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15)
     readonly property color buttonHoverColor: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.25)
@@ -398,6 +404,99 @@ Item {
                     onReleased: { parent.parent.loopPressed = false; extraLargeMode.onCycleLoop() }
                     onCanceled: parent.parent.loopPressed = false
                 }
+            }
+        }
+
+        // --- VOLUME SLIDER ---
+        RowLayout {
+            id: volumeRow
+            visible: extraLargeMode.showVolumeSlider && extraLargeMode.hasPlayer
+            Layout.fillWidth: true
+            Layout.preferredHeight: 28
+            spacing: 8
+
+            // Stores last non-zero volume for mute toggle restore
+            property real savedVolume: 1.0
+
+            // Mute icon (symbolic, accent tinted)
+            Kirigami.Icon {
+                source: extraLargeMode.currentVolume <= 0 ? "audio-volume-muted"
+                    : extraLargeMode.currentVolume < 0.33 ? "audio-volume-low"
+                    : extraLargeMode.currentVolume < 0.66 ? "audio-volume-medium"
+                    : "audio-volume-high"
+                width: 6
+                height: 6
+                isMask: true
+                color: Kirigami.Theme.highlightColor
+                Layout.alignment: Qt.AlignVCenter
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        var row = volumeRow
+                        if (extraLargeMode.currentVolume > 0) {
+                            row.savedVolume = extraLargeMode.currentVolume
+                            extraLargeMode.onSetVolume(0)
+                        } else {
+                            extraLargeMode.onSetVolume(row.savedVolume > 0 ? row.savedVolume : 1.0)
+                        }
+                    }
+                }
+            }
+
+            // Slider track
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 20
+                Layout.alignment: Qt.AlignVCenter
+
+                // Track background
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: 4
+                    radius: 2
+                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15)
+                }
+
+                // Fill
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.max(0, Math.min(parent.width, parent.width * extraLargeMode.currentVolume))
+                    height: 4
+                    radius: 2
+                    color: Kirigami.Theme.highlightColor
+                }
+
+                // Handle
+                Rectangle {
+                    x: Math.max(0, Math.min(parent.width - width, parent.width * extraLargeMode.currentVolume - width / 2))
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 14
+                    height: 14
+                    radius: 7
+                    color: Kirigami.Theme.highlightColor
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: (mouse) => extraLargeMode.onSetVolume(Math.max(0, Math.min(1, mouse.x / width)))
+                    onPositionChanged: (mouse) => {
+                        if (pressed) extraLargeMode.onSetVolume(Math.max(0, Math.min(1, mouse.x / width)))
+                    }
+                }
+            }
+
+            // Volume percentage label (same size as time display)
+            Text {
+                text: Math.round(extraLargeMode.currentVolume * 100) + "%"
+                font.pixelSize: 12
+                color: Kirigami.Theme.textColor
+                opacity: 0.7
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 34
+                horizontalAlignment: Text.AlignRight
             }
         }
     }

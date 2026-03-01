@@ -33,6 +33,7 @@ Item {
     property int buttonSize: 32
     property int maxWidth: 350
     property int scrollingSpeed: 0 // 0: Fast, 1: Medium, 2: Slow
+    property bool showAlbumArt: false
     
     // Callbacks
     property var onPrevious: function() {}
@@ -66,11 +67,9 @@ Item {
         if (!dynamicWidth) return maxWidth
         var textW = calculatedTextWidth
         var ctrlW = controlsWidth
+        var artW = showAlbumArt ? (Math.min(panelMode.height, 28) + 6) : 0
         var spacing = showPanelControls ? 20 : 10
-        var total = textW + ctrlW + spacing + 30 // Extra buffer to prevent truncation
-        
-        // If dynamic width is enabled, don't cap at maxWidth (allow it to grow as needed)
-        // Only apply maxWidth if dynamicWidth is FALSE
+        var total = textW + ctrlW + artW + spacing + 30
         return Math.max(total, 100)
     }
     
@@ -101,7 +100,43 @@ Item {
         width: parent.width
         spacing: panelMode.layoutMode === 2 ? 5 : 10
         layoutDirection: Qt.LeftToRight
-        
+
+        // --- ALBUM ART THUMBNAIL (optional) ---
+        Item {
+            visible: panelMode.showAlbumArt
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: visible ? Math.min(panelMode.height, 28) : 0
+            Layout.preferredHeight: Math.min(panelMode.height, 28)
+
+            Rectangle {
+                id: artThumb
+                anchors.fill: parent
+                radius: width / 2
+                clip: true
+                color: panelMode.hasArt ? "transparent" : Kirigami.Theme.highlightColor
+                opacity: 0.85
+
+                Image {
+                    anchors.fill: parent
+                    source: panelMode.hasArt ? panelMode.artUrl : ""
+                    visible: panelMode.hasArt
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                }
+
+                // Placeholder music note when no art
+                Text {
+                    anchors.centerIn: parent
+                    visible: !panelMode.hasArt
+                    text: "♪"
+                    font.pixelSize: parent.width * 0.55
+                    color: Kirigami.Theme.highlightedTextColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
+
         // Spacers removed - buttons now anchor to edges in all modes
 
         // --- LEFT CONTROL GROUP (Visible in Right & Center Modes) ---

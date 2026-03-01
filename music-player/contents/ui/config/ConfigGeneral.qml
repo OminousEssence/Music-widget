@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.private.mpris as Mpris
 
-Kirigami.FormLayout {
+Item {
     id: page
 
     Component.onCompleted: {
@@ -14,8 +14,8 @@ Kirigami.FormLayout {
     property string cfg_preferredPlayerDefault: ""
     property bool cfg_showPlayerBadge
     property bool cfg_showPlayerBadgeDefault: false
-    
-    // Appearance config (to silence property warnings - these are handled by ConfigAppearance)
+
+    // Appearance config shadow properties
     property int cfg_edgeMargin
     property int cfg_edgeMarginDefault: 10
     property double cfg_backgroundOpacity
@@ -52,9 +52,20 @@ Kirigami.FormLayout {
     property bool cfg_showLoopButtonDefault: false
     property bool cfg_showSeekButtons
     property bool cfg_showSeekButtonsDefault: true
-    
+    property bool cfg_autoHideWhenInactive
+    property bool cfg_autoHideWhenInactiveDefault: false
+    property bool cfg_hideWhenNotPlaying
+    property bool cfg_hideWhenNotPlayingDefault: false
+    property bool cfg_showVolumeSlider
+    property bool cfg_showVolumeSliderDefault: false
+    property bool cfg_panelShowAlbumArt
+    property bool cfg_panelShowAlbumArtDefault: false
+    property int cfg_widgetRadius
+    property int cfg_widgetRadiusDefault: 20
+
     property string title: i18n("General")
-    Mpris.Mpris2Model { 
+
+    Mpris.Mpris2Model {
         id: mpris2Model
         onRowsInserted: refreshPlayerList()
         onRowsRemoved: refreshPlayerList()
@@ -163,6 +174,15 @@ Kirigami.FormLayout {
         repeat: true
         onTriggered: refreshPlayerList()
     }
+    ScrollView {
+        anchors.fill: parent
+        contentWidth: availableWidth
+        clip: true
+
+    Kirigami.FormLayout {
+        id: innerForm
+        width: parent.availableWidth
+
     ComboBox {
         id: playerCombo
         Kirigami.FormData.label: i18n("Default Media Player") + ":"
@@ -260,4 +280,7 @@ Kirigami.FormLayout {
         checked: cfg_showPlayerBadge
          onCheckedChanged: cfg_showPlayerBadge = checked
     }
-}
+
+    } // Kirigami.FormLayout
+    } // ScrollView
+} // Item

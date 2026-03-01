@@ -66,8 +66,10 @@ Rectangle {
         return headerHeight
     }
     
-    // Calculate expanded header height (for wrapping text)
-    readonly property real expandedHeaderHeight: expanded ? Math.max(headerHeight, headerTextMetrics.height + 10) : headerHeight
+    // Calculate expanded header height: uses actual rendered text height
+    readonly property real expandedHeaderHeight: expanded
+        ? Math.max(headerHeight, (badgeTextItem.visible ? badgeTextContent.contentHeight + 14 : 0))
+        : headerHeight
     
     // Calculate list height - smaller in iconOnlyMode
     readonly property int listItemCount: uniquePlayersModel.count
@@ -75,7 +77,7 @@ Rectangle {
     readonly property real listHeight: listItemCount * itemHeight + itemHeight /* General Item */
 
     width: iconOnlyMode ? headerWidth : (expanded ? (explicitExpandedWidth > 0 ? explicitExpandedWidth : Math.max(headerWidth, 180)) : headerWidth)
-    height: expanded ? (headerHeight + 1 + listHeight + (iconOnlyMode ? 5 : 10)) : headerHeight
+    height: expanded ? (expandedHeaderHeight + 1 + listHeight + (iconOnlyMode ? 5 : 10)) : headerHeight
     
     Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
     Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
@@ -199,15 +201,16 @@ Rectangle {
                 
                 // Text Item - only visible when not iconOnlyMode
                 Item {
+                    id: badgeTextItem
                     anchors.left: iconContainer.right
                     anchors.leftMargin: 6
                     anchors.right: expandArrow.left
                     anchors.rightMargin: 6
                     height: parent.height
                     visible: (badge.pillMode || badge.expanded) && !badge.iconOnlyMode
-                    
+
                     Text {
-                        id: badgeText
+                        id: badgeTextContent
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width
                         text: PlayerData.getPrettyName(badge.playerIdentity)
@@ -216,7 +219,7 @@ Rectangle {
                         font.bold: true
                         wrapMode: badge.expanded ? Text.WordWrap : Text.NoWrap
                         elide: badge.expanded ? Text.ElideNone : Text.ElideRight
-                        maximumLineCount: badge.expanded ? 2 : 1
+                        maximumLineCount: badge.expanded ? 3 : 1
                     }
                 }
                 

@@ -14,7 +14,7 @@ PlasmoidItem {
 
     // --- Widget Size Constraints ---
     Layout.preferredWidth: 200
-    Layout.preferredHeight: 200
+    Layout.preferredHeight: (root.isInPanel && fullRep.badgeExpanded) ? 550 : 200
     Layout.minimumWidth: 150
     Layout.minimumHeight: 150
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
@@ -24,6 +24,8 @@ PlasmoidItem {
     // ---------------------------------------------------------
     readonly property string preferredPlayer: Plasmoid.configuration.preferredPlayer || ""
     readonly property bool showPlayerBadge: Plasmoid.configuration.showPlayerBadge !== undefined ? Plasmoid.configuration.showPlayerBadge : true
+    readonly property bool autoHideWhenInactive: Plasmoid.configuration.autoHideWhenInactive !== undefined ? Plasmoid.configuration.autoHideWhenInactive : false
+    readonly property bool hideWhenNotPlaying: Plasmoid.configuration.hideWhenNotPlaying !== undefined ? Plasmoid.configuration.hideWhenNotPlaying : false
     readonly property bool showPanelControls: Plasmoid.configuration.showPanelControls !== undefined ? Plasmoid.configuration.showPanelControls : true
     readonly property bool cfg_panelShowTitle: Plasmoid.configuration.panelShowTitle !== undefined ? Plasmoid.configuration.panelShowTitle : true
     readonly property bool cfg_panelShowArtist: Plasmoid.configuration.panelShowArtist !== undefined ? Plasmoid.configuration.panelShowArtist : true
@@ -41,6 +43,8 @@ PlasmoidItem {
     readonly property bool cfg_showShuffleButton: Plasmoid.configuration.showShuffleButton !== undefined ? Plasmoid.configuration.showShuffleButton : true
     readonly property bool cfg_showLoopButton: Plasmoid.configuration.showLoopButton !== undefined ? Plasmoid.configuration.showLoopButton : true
     readonly property bool cfg_showSeekButtons: Plasmoid.configuration.showSeekButtons !== undefined ? Plasmoid.configuration.showSeekButtons : true
+    readonly property bool cfg_showVolumeSlider: Plasmoid.configuration.showVolumeSlider !== undefined ? Plasmoid.configuration.showVolumeSlider : false
+    readonly property bool cfg_panelShowAlbumArt: Plasmoid.configuration.panelShowAlbumArt !== undefined ? Plasmoid.configuration.panelShowAlbumArt : false
     readonly property int cfg_widgetRadius: Plasmoid.configuration.widgetRadius !== undefined ? Plasmoid.configuration.widgetRadius : 20
 
     // Panel Detection
@@ -137,12 +141,9 @@ PlasmoidItem {
             }
         }
     }
-    
-    onPreferredPlayerChanged: updateCurrentPlayer()
-    
+
     Component.onCompleted: {
-        // Defer initial player detection for faster startup
-        Qt.callLater(updateCurrentPlayer)
+        Qt.callLater(() => { updateCurrentPlayer(); updateStatus() })
     }
 
     // ---------------------------------------------------------
@@ -150,6 +151,37 @@ PlasmoidItem {
     // ---------------------------------------------------------
     readonly property bool hasPlayer: !!currentPlayer
     readonly property bool isPlaying: currentPlayer ? currentPlayer.playbackStatus === Mpris.PlaybackStatus.Playing : false
+
+    // ---------------------------------------------------------
+    // Plasmoid Status (visibility) Logic
+    // ---------------------------------------------------------
+    function updateStatus() {
+        // Rule 1: Not in panel → always passive (desktop widget, no panel slot needed)
+        if (!isInPanel) {
+            Plasmoid.status = PlasmaCore.Types.PassiveStatus
+            return
+        }
+        // Rule 2: Locked player is missing → passive (autoHide option)
+        if (autoHideWhenInactive && preferredPlayer !== "" && !hasPlayer) {
+            Plasmoid.status = PlasmaCore.Types.PassiveStatus
+            return
+        }
+        // Rule 3: Nothing playing in panel → passive (hideWhenNotPlaying option)
+        if (hideWhenNotPlaying && !isPlaying) {
+            Plasmoid.status = PlasmaCore.Types.PassiveStatus
+            return
+        }
+        // Otherwise: active
+        Plasmoid.status = PlasmaCore.Types.ActiveStatus
+    }
+
+    // Trigger status update on any relevant change
+    onIsInPanelChanged: updateStatus()
+    onHasPlayerChanged: updateStatus()
+    onIsPlayingChanged: updateStatus()
+    onAutoHideWhenInactiveChanged: updateStatus()
+    onHideWhenNotPlayingChanged: updateStatus()
+    onPreferredPlayerChanged: { updateCurrentPlayer(); updateStatus() }
     
     // Album Art Fallback Logic
     Components.AlbumArtFetcher {
@@ -405,7 +437,10 @@ PlasmoidItem {
                     item.dynamicWidth = Qt.binding(() => root.cfg_panelDynamicWidth)
                     item.autoButtonSize = Qt.binding(() => root.cfg_panelAutoButtonSize)
                     item.buttonSize = Qt.binding(() => root.cfg_panelButtonSize)
-                    
+                    if (item.hasOwnProperty("showAlbumArt")) {
+                        item.showAlbumArt = Qt.binding(() => root.cfg_panelShowAlbumArt)
+                    }
+
                     // Callbacks
                     item.onPrevious = root.previous
                     item.onPlayPause = root.togglePlayPause
@@ -432,6 +467,8 @@ PlasmoidItem {
         id: fullRep
         anchors.fill: parent
         
+        readonly property bool badgeExpanded: modeLoader.item ? modeLoader.item.badgeExpanded : false
+        
         // Mode Detection - Computed properties
         readonly property bool isWide: root.width > 300
         readonly property bool isLargeSq: (root.height > 250) && isWide
@@ -457,7 +494,7 @@ PlasmoidItem {
             color: root.isInPanel ? "transparent" : Kirigami.Theme.backgroundColor
             opacity: root.isInPanel ? 1 : root.cfg_backgroundOpacity
             radius: root.cfg_widgetRadius
-            clip: true
+            clip: modeLoader.item ? !modeLoader.item.badgeExpanded : true
             
             // Lazy Loader for Mode Components
             Loader {
@@ -553,6 +590,15 @@ PlasmoidItem {
                         }
                         if (item.hasOwnProperty("showSeekButtons")) {
                             item.showSeekButtons = Qt.binding(() => root.cfg_showSeekButtons)
+                        }
+                        if (item.hasOwnProperty("showVolumeSlider")) {
+                            item.showVolumeSlider = Qt.binding(() => root.cfg_showVolumeSlider)
+                        }
+                        if (item.hasOwnProperty("currentVolume")) {
+                            item.currentVolume = Qt.binding(() => root.currentPlayer ? root.currentPlayer.volume : 1.0)
+                        }
+                        if (item.hasOwnProperty("onSetVolume")) {
+                            item.onSetVolume = (vol) => { if (root.currentPlayer) root.currentPlayer.volume = vol }
                         }
                         
                         // Player Selection

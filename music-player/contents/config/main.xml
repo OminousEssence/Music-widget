@@ -13,6 +13,14 @@
       <default>false</default>
       <label>Show media player icon badge</label>
     </entry>
+    <entry name="autoHideWhenInactive" type="Bool">
+      <default>false</default>
+      <label>Auto-hide widget when locked player is not active</label>
+    </entry>
+    <entry name="hideWhenNotPlaying" type="Bool">
+      <default>false</default>
+      <label>Hide widget in panel when nothing is playing</label>
+    </entry>
   </group>
   <group name="Appearance">
     <entry name="edgeMargin" type="Int">
@@ -90,6 +98,14 @@
     <entry name="showSeekButtons" type="Bool">
       <default>true</default>
       <label>Show 10-second seek buttons in Extra Large mode</label>
+    </entry>
+    <entry name="showVolumeSlider" type="Bool">
+      <default>false</default>
+      <label>Show volume slider in Extra Large mode</label>
+    </entry>
+    <entry name="panelShowAlbumArt" type="Bool">
+      <default>false</default>
+      <label>Show album art thumbnail in panel</label>
     </entry>
   </group>
 </kcfg>
