@@ -12,8 +12,6 @@ import "components" as Components
 PlasmoidItem {
     id: root
 
-    Plasmoid.domain: "com.mcc45tr.musicplayer"
-
     // --- Widget Size Constraints ---
     Layout.preferredWidth: 200
     Layout.preferredHeight: (root.isInPanel && fullRep.badgeExpanded) ? 550 : 200
