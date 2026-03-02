@@ -200,19 +200,37 @@ PlasmoidItem {
     function calculateIsNight(item) {
         if (!item) return false
 
+        // Determine the reference for sunrise/sunset
         var referenceItem = (item.sunrise && item.sunset) ? item : root.currentWeather
-        
+
         if (!referenceItem || !referenceItem.sunrise || !referenceItem.sunset) {
-            // Fallback to system time
-            var hour = item.timestamp ? new Date(item.timestamp).getHours() : new Date().getHours()
-            return hour < 6 || hour > 19
+            // Fallback: no sunrise/sunset data at all, use simple hour range
+            var fallbackHour = item.timestamp ? new Date(item.timestamp).getHours() : new Date().getHours()
+            return fallbackHour < 6 || fallbackHour >= 20
         }
-        
-        var timeToCompare = item.timestamp ? new Date(item.timestamp).getTime() : Date.now()
-        var sunrise = new Date(referenceItem.sunrise).getTime()
-        var sunset = new Date(referenceItem.sunset).getTime()
-        
-        return timeToCompare < sunrise || timeToCompare > sunset
+
+        // Determine the hour to compare
+        var compareDate
+        if (item.timestamp) {
+            compareDate = new Date(item.timestamp)
+        } else if (item.date) {
+            // Daily forecast item with a date string but no timestamp — show as daytime
+            return false
+        } else {
+            compareDate = new Date()
+        }
+
+        // Parse sunrise/sunset to extract hours and minutes in local time
+        var sunriseDate = new Date(referenceItem.sunrise)
+        var sunsetDate = new Date(referenceItem.sunset)
+
+        // Convert everything to minutes-since-midnight for clean comparison
+        var compareMinutes = compareDate.getHours() * 60 + compareDate.getMinutes()
+        var sunriseMinutes = sunriseDate.getHours() * 60 + sunriseDate.getMinutes()
+        var sunsetMinutes = sunsetDate.getHours() * 60 + sunsetDate.getMinutes()
+
+        // It's night if current time is before sunrise or after sunset
+        return compareMinutes < sunriseMinutes || compareMinutes >= sunsetMinutes
     }
 
     function getWeatherIcon(item) {
