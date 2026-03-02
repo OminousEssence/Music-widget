@@ -49,3 +49,15 @@ msgstr "پس منظر کی دھندلاہٹ:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (کوئی پس منظر نہیں)"
+
+msgid "Content Padding:"
+msgstr "مواد کا فاصلہ:"
+
+msgid "Medium (10px)"
+msgstr "درمیانہ (10px)"
+
+msgid "More (15px)"
+msgstr "زیادہ (15px)"
+
+msgid "Most (20px)"
+msgstr "سب سے زیادہ (20px)"

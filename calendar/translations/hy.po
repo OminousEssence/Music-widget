@@ -49,3 +49,15 @@ msgstr "Ֆոնի թափանցիկություն:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (Առանց ֆոնի)"
+
+msgid "Content Padding:"
+msgstr "Բովdelays padding:"
+
+msgid "Medium (10px)"
+msgstr "Միջին (10px)"
+
+msgid "More (15px)"
+msgstr "Ավելին (15px)"
+
+msgid "Most (20px)"
+msgstr "Առավdelays (20px)"

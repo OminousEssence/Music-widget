@@ -49,3 +49,15 @@ msgstr "পটভূমি স্বচ্ছতা:"
 
 msgid "0% (No Backgrounds)"
 msgstr "০% (কোন পটভূমি নেই)"
+
+msgid "Content Padding:"
+msgstr "কন্টেন্ট প্যাডিং:"
+
+msgid "Medium (10px)"
+msgstr "মাঝারি (10px)"
+
+msgid "More (15px)"
+msgstr "বেশি (15px)"
+
+msgid "Most (20px)"
+msgstr "সবচেয়ে বেশি (20px)"

@@ -49,3 +49,15 @@ msgstr "Hintergrundtransparenz:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (Kein Hintergrund)"
+
+msgid "Content Padding:"
+msgstr "Inhaltsabstand:"
+
+msgid "Medium (10px)"
+msgstr "Mittel (10px)"
+
+msgid "More (15px)"
+msgstr "Mehr (15px)"
+
+msgid "Most (20px)"
+msgstr "Maximal (20px)"

@@ -49,3 +49,15 @@ msgstr "شفافیت پس‌زمینه:"
 
 msgid "0% (No Backgrounds)"
 msgstr "۰٪ (بدون پس‌زمینه)"
+
+msgid "Content Padding:"
+msgstr "فاصله محتوا:"
+
+msgid "Medium (10px)"
+msgstr "متوسط (10px)"
+
+msgid "More (15px)"
+msgstr "بیشتر (15px)"
+
+msgid "Most (20px)"
+msgstr "بیشترین (20px)"

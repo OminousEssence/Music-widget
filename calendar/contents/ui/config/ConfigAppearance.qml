@@ -14,6 +14,7 @@ Item {
     property string cfg_cornerRadius
     property double cfg_backgroundOpacity
     property double cfg_widgetScale
+    property int cfg_contentPadding
 
     // Default values
     property int cfg_edgeMarginDefault: 10
@@ -21,6 +22,7 @@ Item {
     property string cfg_cornerRadiusDefault: "normal"
     property double cfg_backgroundOpacityDefault: 1.0
     property double cfg_widgetScaleDefault: 1.0
+    property int cfg_contentPaddingDefault: 10
 
     function getOpacityIndex(val) {
         var bestIdx = 0
@@ -65,6 +67,23 @@ Item {
                         if (currentIndex === 0) configAppearance.cfg_edgeMargin = 10
                         else if (currentIndex === 1) configAppearance.cfg_edgeMargin = 5
                         else if (currentIndex === 2) configAppearance.cfg_edgeMargin = 0
+                    }
+                }
+
+                Label {
+                    text: i18n("Content Padding:")
+                    font.bold: true
+                }
+
+                ComboBox {
+                    id: contentPaddingCombo
+                    Layout.fillWidth: true
+                    model: [i18n("None (0px)"), i18n("Less (5px)"), i18n("Medium (10px)"), i18n("More (15px)"), i18n("Most (20px)")]
+
+                    property var paddingValues: [0, 5, 10, 15, 20]
+
+                    onCurrentIndexChanged: {
+                        configAppearance.cfg_contentPadding = paddingValues[currentIndex]
                     }
                 }
 
@@ -147,6 +166,11 @@ Item {
         else if (margin === 5) edgeMarginCombo.currentIndex = 1
         else if (margin === 0) edgeMarginCombo.currentIndex = 2
         else edgeMarginCombo.currentIndex = 0
+
+        // Initialize Content Padding
+        var padding = cfg_contentPadding
+        var paddingIdx = contentPaddingCombo.paddingValues.indexOf(padding)
+        contentPaddingCombo.currentIndex = paddingIdx >= 0 ? paddingIdx : 2 // default: Orta (10px)
 
         // Initialize Corner Radius
         var radiusMode = cfg_cornerRadius || "normal"

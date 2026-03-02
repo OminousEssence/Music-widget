@@ -16,7 +16,7 @@ ColumnLayout {
     property color completedColor: "#808080"
     property string titleFont: "Sans Serif"
 
-    spacing: 6
+    spacing: 0
 
     property int displayYear: 0
     property int currentMonthIndex: -1

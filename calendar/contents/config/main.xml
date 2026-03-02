@@ -26,5 +26,9 @@
       <default>1.0</default>
       <label>Widget Scale Multiplier</label>
     </entry>
+    <entry name="contentPadding" type="Int">
+      <default>10</default>
+      <label>Content Padding</label>
+    </entry>
   </group>
 </kcfg>

@@ -49,3 +49,15 @@ msgstr "Background Opacity:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (No Backgrounds)"
+
+msgid "Content Padding:"
+msgstr "Content Padding:"
+
+msgid "Medium (10px)"
+msgstr "Medium (10px)"
+
+msgid "More (15px)"
+msgstr "More (15px)"
+
+msgid "Most (20px)"
+msgstr "Most (20px)"

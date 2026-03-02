@@ -49,3 +49,15 @@ msgstr "背景不透明度:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (无背景)"
+
+msgid "Content Padding:"
+msgstr "内容边距:"
+
+msgid "Medium (10px)"
+msgstr "中 (10px)"
+
+msgid "More (15px)"
+msgstr "多 (15px)"
+
+msgid "Most (20px)"
+msgstr "最多 (20px)"

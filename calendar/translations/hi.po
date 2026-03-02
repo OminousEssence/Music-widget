@@ -49,3 +49,15 @@ msgstr "पार्श्वभूमि अपारदर्शिता:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (कोई पार्श्वभूमि नहीं)"
+
+msgid "Content Padding:"
+msgstr "सामग्री पैडिंग:"
+
+msgid "Medium (10px)"
+msgstr "मध्यम (10px)"
+
+msgid "More (15px)"
+msgstr "अधिक (15px)"
+
+msgid "Most (20px)"
+msgstr "सबसे अधिक (20px)"

@@ -49,3 +49,15 @@ msgstr "Arka Plan Saydamlığı:"
 
 msgid "0% (No Backgrounds)"
 msgstr "%0 (Arka Plan Yok)"
+
+msgid "Content Padding:"
+msgstr "İçerik Boşluğu:"
+
+msgid "Medium (10px)"
+msgstr "Orta (10px)"
+
+msgid "More (15px)"
+msgstr "Çok (15px)"
+
+msgid "Most (20px)"
+msgstr "Daha Çok (20px)"

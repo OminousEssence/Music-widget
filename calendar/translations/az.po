@@ -49,3 +49,15 @@ msgstr "Arxa planın şəffaflığı:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (Arxa plan yoxdur)"
+
+msgid "Content Padding:"
+msgstr "Məzmun boşluğu:"
+
+msgid "Medium (10px)"
+msgstr "Orta (10px)"
+
+msgid "More (15px)"
+msgstr "Çox (15px)"
+
+msgid "Most (20px)"
+msgstr "Ən çox (20px)"

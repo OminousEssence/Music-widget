@@ -49,3 +49,15 @@ msgstr "背景の不透明度:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (背景なし)"
+
+msgid "Content Padding:"
+msgstr "コンテンツの余白:"
+
+msgid "Medium (10px)"
+msgstr "中 (10px)"
+
+msgid "More (15px)"
+msgstr "多め (15px)"
+
+msgid "Most (20px)"
+msgstr "最大 (20px)"

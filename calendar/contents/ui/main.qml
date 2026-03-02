@@ -180,10 +180,7 @@ PlasmoidItem {
             QQC2.SwipeView {
                 id: swipeView
                 anchors.fill: parent
-                topPadding: Math.round(10 * fullRepItem.fontScale)
-                bottomPadding: Math.round(10 * fullRepItem.fontScale)
-                leftPadding: Math.round(10 * fullRepItem.fontScale)
-                rightPadding: Math.round(10 * fullRepItem.fontScale)
+                anchors.margins: Math.round((Plasmoid.configuration.contentPadding !== undefined ? Plasmoid.configuration.contentPadding : 10) * fullRepItem.fontScale)
 
                 clip: true
                 orientation: Qt.Vertical

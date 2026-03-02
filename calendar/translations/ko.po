@@ -49,3 +49,15 @@ msgstr "배경 투명도:"
 
 msgid "0% (No Backgrounds)"
 msgstr "0% (배경 없음)"
+
+msgid "Content Padding:"
+msgstr "콘텐츠 여백:"
+
+msgid "Medium (10px)"
+msgstr "보통 (10px)"
+
+msgid "More (15px)"
+msgstr "많이 (15px)"
+
+msgid "Most (20px)"
+msgstr "최대 (20px)"
