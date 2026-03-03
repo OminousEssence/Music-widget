@@ -1,9 +1,9 @@
 {
     "KPlugin": {
         "Id": "com.mcc45tr.msicontrol",
-        "Name": "MSI Control Center",
-        "Description": "System tray widget for MSI laptop controls (msi-ec)",
-        "Icon": "cpu",
+        "Name": "MSI Control Center (MCC)",
+        "Description": "Premium Control Center for MSI Laptops (msi-ec)",
+        "Icon": "laptop-symbolic",
         "Authors": [
             {
                 "Name": "mcc45tr",

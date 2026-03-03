@@ -21,7 +21,7 @@ Item {
     
     Kirigami.Icon {
         anchors.fill: parent
-        source: isAvailable ? "cpu" : "dialog-warning"
+        source: isAvailable ? "laptop-symbolic" : "dialog-warning"
         color: isAvailable ? Kirigami.Theme.textColor : Kirigami.Theme.neutralColor
     }
     

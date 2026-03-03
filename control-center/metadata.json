@@ -10,20 +10,11 @@
         ],
         "Category": "Utilities",
         "Description": "A simple Kontrol Merkezi widget",
-        "Icon": "preferences-system",
+        "Icon": "laptop-symbolic",
         "Id": "com.mcc45tr.controlcenter",
         "Name": "Control Center",
         "Version": "1.0",
         "Website": "",
-        "License": "GPL-3.0",
-        "Name[tr]": "Kontrol Merkezi",
-        "Name[de]": "Kontrollzentrum",
-        "Name[fr]": "Centre de contrôle",
-        "Name[ro]": "Centru de control",
-        "Name[cs]": "Ovládací centrum",
-        "Name[es]": "Centro de control",
-        "Name[ru]": "Центр управления",
-        "Name[pt]": "Centro de controle",
-        "Name[ja]": "コントロールセンター"
+        "License": "GPL-3.0"
     }
 }

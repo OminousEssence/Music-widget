@@ -1,0 +1,22 @@
+# MSI-EC platform device attributes
+# Explicitly granting 0660 (rw-rw----) to 'msi-ec' group for CONTROL nodes
+SUBSYSTEM=="platform", DRIVERS=="msi-ec", \
+  ATTR{shift_mode}="0660", ATTR{fan_mode}="0660", ATTR{cooler_boost}="0660", \
+  ATTR{webcam}="0660", ATTR{webcam_block}="0660", ATTR{super_battery}="0660", \
+  ATTR{fn_key}="0660", ATTR{win_key}="0660", ATTR{usb_power}="0660", \
+  GROUP="msi-ec"
+
+# CPU/GPU basic fan speed control
+SUBSYSTEM=="platform", DRIVERS=="msi-ec", \
+  ATTR{cpu/basic_fan_speed}="0660", ATTR{gpu/basic_fan_speed}="0660", \
+  GROUP="msi-ec"
+
+# Battery threshold control attributes
+SUBSYSTEM=="power_supply", KERNEL=="BAT*", \
+  ATTR{charge_control_end_threshold}="0660", ATTR{charge_control_start_threshold}="0660", \
+  GROUP="msi-ec"
+
+# Keyboard backlight brightness
+SUBSYSTEM=="leds", KERNEL=="msiacpi::kbd_backlight", \
+  ATTR{brightness}="0660", \
+  GROUP="msi-ec"
