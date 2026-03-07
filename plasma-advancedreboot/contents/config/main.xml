@@ -19,5 +19,9 @@
       <default>10</default>
       <label>Widget Edge Margin</label>
     </entry>
+    <entry name="listItemHeight" type="Int">
+      <default>40</default>
+      <label>List Item Height</label>
+    </entry>
   </group>
 </kcfg>

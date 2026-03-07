@@ -19,6 +19,13 @@ Item {
     property double cfg_backgroundOpacity
     property int cfg_edgeMargin
     
+    property int cfg_listItemHeight: 40
+    property int cfg_listItemHeightDefault: 40
+    onCfg_listItemHeightChanged: {
+        var idx = listItemHeightCombo.heightValues.indexOf(cfg_listItemHeight)
+        if (idx !== -1) listItemHeightCombo.currentIndex = idx
+    }
+    
     // Defaults needed for KCM logic
     property double cfg_backgroundOpacityDefault
     property int cfg_edgeMarginDefault
@@ -120,6 +127,24 @@ Item {
                         if (currentIndex === 0) page.cfg_edgeMargin = 10
                         else if (currentIndex === 1) page.cfg_edgeMargin = 5
                         else if (currentIndex === 2) page.cfg_edgeMargin = 0
+                    }
+                }
+                
+                Label {
+                    text: i18n("List Item Height:")
+                    font.bold: true
+                    visible: viewModeCombo.currentIndex === 1
+                }
+                
+                ComboBox {
+                    id: listItemHeightCombo
+                    Layout.fillWidth: true
+                    model: [i18n("Small (40px)"), i18n("Medium (60px)"), i18n("Large (80px)")]
+                    property var heightValues: [40, 60, 80]
+                    visible: viewModeCombo.currentIndex === 1
+                    
+                    onCurrentIndexChanged: {
+                        page.cfg_listItemHeight = heightValues[currentIndex]
                     }
                 }
             }

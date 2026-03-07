@@ -71,6 +71,9 @@ PlasmoidItem {
                         if (item.hasOwnProperty("bootManager")) {
                             item.bootManager = bootManager
                         }
+                        if (item.hasOwnProperty("edgeMargin")) {
+                            item.edgeMargin = edgeMargin
+                        }
                     }
                 }
                 Connections {
@@ -89,13 +92,28 @@ PlasmoidItem {
             
             // Empty State
             Item {
+                id: emptyStateContainer
                 anchors.fill: parent
                 visible: bootManager.bootEntries.length === 0 && !bootManager.isLoading
                 z: 1 
+                
+                property bool isCompact: root.width < 170 || root.height < 170
+
+                // Compact Mode
+                Button {
+                    visible: emptyStateContainer.isCompact
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    icon.name: "lock"
+                    display: AbstractButton.IconOnly
+                    onClicked: bootManager.loadEntriesWithAuth()
+                }
+
+                // Normal Mode
                 ColumnLayout {
                     anchors.centerIn: parent
-                    property bool isCompact: root.width < 170 || root.height < 170
-                    spacing: isCompact ? 0 : 15
+                    visible: !emptyStateContainer.isCompact
+                    spacing: 15
                     
                     Kirigami.Icon { 
                         source: "dialog-error-symbolic"
@@ -103,7 +121,6 @@ PlasmoidItem {
                         Layout.preferredHeight: 48 
                         Layout.alignment: Qt.AlignHCenter 
                         color: Kirigami.Theme.disabledTextColor
-                        visible: !parent.isCompact 
                     }
                     
                     Text { 
@@ -111,17 +128,13 @@ PlasmoidItem {
                         color: Kirigami.Theme.disabledTextColor
                         font.pixelSize: 14
                         Layout.alignment: Qt.AlignHCenter
-                        visible: !parent.isCompact
                     }
                     
                     Button { 
                         text: i18n("Authorize & Refresh")
                         icon.name: "lock"
-                        display: parent.isCompact ? AbstractButton.IconOnly : AbstractButton.TextBesideIcon
+                        display: AbstractButton.TextBesideIcon
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredWidth: parent.isCompact ? 64 : implicitWidth
-                        Layout.preferredHeight: parent.isCompact ? 64 : implicitHeight
-                        Layout.topMargin: parent.isCompact ? 0 : 10
                         onClicked: bootManager.loadEntriesWithAuth()
                     }
                 }
