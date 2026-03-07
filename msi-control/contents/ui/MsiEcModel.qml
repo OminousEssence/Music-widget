@@ -95,10 +95,10 @@ Item {
         }
     }
 
-    // Fast timer — metrics only (temps + fan speeds): 1 second
+    // Fast timer — metrics only (temps + fan speeds): 5 seconds
     Timer {
         id: metricsPollTimer
-        interval: 1000
+        interval: 5000
         running: true
         repeat: true
         triggeredOnStart: true
@@ -133,13 +133,13 @@ Item {
     function checkPermissions() {
         _permChecksCompleted = 0
         // Check 1: Does group 'msi-ec' exist?
-        execSource.connectSource("getent group msi-ec >/dev/null 2>&1 && echo '1' || echo '0':::permGroupExists")
+        execSource.connectSource("getent group msi-ec >/dev/null 2>&1 && echo '1' || echo '0':::permGroupExists:::" + Date.now())
         // Check 2: Is current user in 'msi-ec' group? (active session OR persistent /etc/group)
-        execSource.connectSource("(id -nG 2>/dev/null | grep -qw msi-ec || grep -q '^msi-ec:.*\\b'\"$(id -un)\"'\\b' /etc/group 2>/dev/null) && echo '1' || echo '0':::permUserInGroup")
+        execSource.connectSource("(id -nG 2>/dev/null | grep -qw msi-ec || grep -q '^msi-ec:.*\\b'\"$(id -un)\"'\\b' /etc/group 2>/dev/null) && echo '1' || echo '0':::permUserInGroup:::" + Date.now())
         // Check 3: Are udev rules installed?
-        execSource.connectSource("test -f " + rulesPath + " && echo '1' || echo '0':::permRulesInstalled")
-        // Check 4: Can we actually write to sysfs?
-        execSource.connectSource("test -w " + basePath + "/shift_mode 2>/dev/null && echo '1' || echo '0':::permSysfsWritable")
+        execSource.connectSource("test -f " + rulesPath + " && echo '1' || echo '0':::permRulesInstalled:::" + Date.now())
+        // Check 4: Can we WRITE to a sysfs node? (this bypasses 'access' logic limitations and truly tests read/write ability)
+        execSource.connectSource("sh -c '[ -w " + basePath + "/shift_mode ] || [ -w " + basePath + "/cooler_boost ] || [ -w " + basePath + "/webcam ]' && echo '1' || echo '0':::permSysfsWritable:::" + Date.now())
     }
 
     function _handlePermCheck(tag, val) {
@@ -174,7 +174,7 @@ Item {
     // ═══════════════════════════════════════════════
 
     function checkAvailability() {
-        execSource.connectSource("test -d " + basePath + " && echo '1' || echo '0'")
+        execSource.connectSource("test -d " + basePath + " && echo '1' || echo '0':::availCheck:::" + Date.now())
     }
 
     function detectFeatures() {
@@ -201,7 +201,7 @@ Item {
     }
 
     function _checkFeature(path, tag) {
-        execSource.connectSource("test -e " + path + " && echo '1' || echo '0':::" + tag)
+        execSource.connectSource("test -e " + path + " && echo '1' || echo '0':::" + tag + ":::" + Date.now())
     }
 
     // ═══════════════════════════════════════════════
@@ -265,7 +265,8 @@ Item {
     }
 
     function _read(path, tag) {
-        execSource.connectSource("cat " + path + " 2>/dev/null || echo '':::" + tag)
+        // Append Date.now() to bypass the executable engine's source cache
+        execSource.connectSource("cat " + path + " 2>/dev/null || echo '':::" + tag + ":::" + Date.now())
     }
 
     // ═══════════════════════════════════════════════
@@ -276,7 +277,7 @@ Item {
         var output = (data["stdout"] || "").trim()
 
         // Driver availability check
-        if (source === "test -d " + basePath + " && echo '1' || echo '0'") {
+        if (source.includes(":::availCheck")) {
             var wasAvailable = isAvailable
             isAvailable = (output === "1")
             if (isAvailable && !wasAvailable) {

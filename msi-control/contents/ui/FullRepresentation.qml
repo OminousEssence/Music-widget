@@ -289,13 +289,6 @@ PlasmaExtras.Representation {
                                 Layout.preferredHeight: Kirigami.Units.iconSizes.medium
                                 Layout.alignment: Qt.AlignHCenter
                                 sourceSize: Qt.size(Kirigami.Units.iconSizes.medium, Kirigami.Units.iconSizes.medium)
-
-                                RotationAnimation on rotation {
-                                    running: modelReady && msiModel.cpuFan > 0
-                                    loops: Animation.Infinite
-                                    from: 0; to: 360
-                                    duration: modelReady && msiModel.cpuFan > 0 ? Math.max(100, 30000 / msiModel.cpuFan) : 2000
-                                }
                             }
 
                             QQC2.Label {
@@ -336,13 +329,6 @@ PlasmaExtras.Representation {
                                 Layout.preferredHeight: Kirigami.Units.iconSizes.medium
                                 Layout.alignment: Qt.AlignHCenter
                                 sourceSize: Qt.size(Kirigami.Units.iconSizes.medium, Kirigami.Units.iconSizes.medium)
-
-                                RotationAnimation on rotation {
-                                    running: modelReady && msiModel.gpuFan > 0
-                                    loops: Animation.Infinite
-                                    from: 0; to: 360
-                                    duration: modelReady && msiModel.gpuFan > 0 ? Math.max(100, 30000 / msiModel.gpuFan) : 2000
-                                }
                             }
 
                             QQC2.Label {
@@ -370,16 +356,23 @@ PlasmaExtras.Representation {
                     Kirigami.FormData.label: i18n("Keyboard Backlight")
                 }
 
-                RowLayout {
+                ColumnLayout {
                     visible: modelReady && msiModel.hasKbdBacklight
-                    Kirigami.FormData.label: modelReady ? (kbdBacklightLabels[msiModel.kbdBacklight] || i18n("Off")) : ""
+                    Layout.fillWidth: true
                     spacing: Kirigami.Units.smallSpacing
 
                     QQC2.Slider {
                         Layout.fillWidth: true
                         from: 0; to: 3; stepSize: 1
+                        snapMode: QQC2.Slider.SnapAlways
                         value: modelReady ? msiModel.kbdBacklight : 0
                         onMoved: if (modelReady) msiModel.setKbdBacklight(value)
+                    }
+
+                    QQC2.Label {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: modelReady ? (kbdBacklightLabels[msiModel.kbdBacklight] || i18n("Off")) : ""
+                        font.bold: true
                     }
                 }
 
