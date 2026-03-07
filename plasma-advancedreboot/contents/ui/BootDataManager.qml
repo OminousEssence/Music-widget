@@ -14,6 +14,8 @@ Item {
     
     // Command properties
     property string cmdWindowsVer: ""
+    property string cmdGrubParse: ""
+    property string activeBootloader: "systemd-boot"
 
     function updateWindowsVerCmd() {
         var scriptPath = Qt.resolvedUrl("../tools/find_windows_mount.sh").toString()
@@ -21,6 +23,12 @@ Item {
             scriptPath = scriptPath.substring(7)
         }
         root.cmdWindowsVer = "sh \"" + scriptPath + "\""
+        
+        var grubScriptPath = Qt.resolvedUrl("../tools/find_grub_entries.sh").toString()
+        if (grubScriptPath.startsWith("file://")) {
+            grubScriptPath = grubScriptPath.substring(7)
+        }
+        root.cmdGrubParse = "sh \"" + grubScriptPath + "\""
     }
     
     function processEntries(entries) {
@@ -44,6 +52,61 @@ Item {
                 entries[k].isFirmware = true
             }
         }
+        
+        // --- Apply Custom Rules --- //
+        var rulesStr = Plasmoid.configuration.customEntryRules || ""
+        if (rulesStr.trim() !== "") {
+            try {
+                var rules = JSON.parse(rulesStr)
+                var finalEntries = []
+                
+                // Map rules by id for quick lookup
+                var rulesMap = {}
+                for (var r = 0; r < rules.length; r++) {
+                    rulesMap[rules[r].id] = rules[r]
+                }
+                
+                // Track which entries from rules were added
+                var addedIds = {}
+                
+                // 1. Add known entries based on rules order
+                for (var r = 0; r < rules.length; r++) {
+                    var rule = rules[r]
+                    if (rule.isHidden) continue
+                    
+                    var foundEntry = null
+                    for (var e = 0; e < entries.length; e++) {
+                        if (entries[e].id === rule.id) {
+                            foundEntry = entries[e]
+                            break
+                        }
+                    }
+                    
+                    if (foundEntry) {
+                        if (rule.customTitle && rule.customTitle !== "") {
+                            foundEntry.title = rule.customTitle
+                        }
+                        if (rule.customIcon && rule.customIcon !== "") {
+                            foundEntry.customIcon = rule.customIcon
+                        }
+                        finalEntries.push(foundEntry)
+                        addedIds[rule.id] = true
+                    }
+                }
+                
+                // 2. Append any new/unconfigured entries
+                for (var e = 0; e < entries.length; e++) {
+                    if (!addedIds[entries[e].id]) {
+                        finalEntries.push(entries[e])
+                    }
+                }
+                
+                return finalEntries
+            } catch(jsonErr) {
+                console.error("BootDataManager: Failed to parse custom rules: " + jsonErr)
+            }
+        }
+        
         return entries
     }
 
@@ -74,9 +137,18 @@ Item {
                      }
                      root.isLoading = false
                      loadingTimer.stop()
+                 } else if (sourceName.indexOf("find_grub_entries") !== -1) {
+                      var grubErrStr = data["stderr"] ? data["stderr"].toLowerCase() : "";
+                      if (data["exit code"] === 126 || data["exit code"] === 127 || grubErrStr.includes("polkit")) {
+                          root.errorMessage = i18n("Authorization failed or canceled.")
+                      } else {
+                          root.errorMessage = i18n("Error reading GRUB configuration or requires root.")
+                      }
+                      root.isLoading = false
+                      loadingTimer.stop()
                  }
             } else {
-                 if (sourceName.indexOf("bootctl list") !== -1) {
+                 if (sourceName.indexOf("bootctl list") !== -1 || sourceName.indexOf("find_grub_entries") !== -1) {
                      root.errorMessage = ""
                  }
             }
@@ -103,7 +175,36 @@ Item {
                     root.isLoading = false
                 }
                 execSource.disconnectSource(sourceName)
-            } 
+            } else if (sourceName.indexOf("find_grub_entries") !== -1 && data["stdout"]) {
+                console.log("BootDataManager: Received GRUB output")
+                try {
+                    var rawEntries = JSON.parse(data["stdout"])
+                    console.log("BootDataManager: Parsed " + rawEntries.length + " GRUB entries")
+                    
+                    if (rawEntries.length === 0) {
+                        root.errorMessage = i18n("System is not booted with systemd-boot and GRUB returns no entries.")
+                        root.isLoading = false
+                        loadingTimer.stop()
+                        execSource.disconnectSource(sourceName)
+                        return
+                    }
+
+                    var entries = processEntries(rawEntries)
+                    root.bootEntries = entries
+                    Plasmoid.configuration.cachedBootEntries = data["stdout"]
+                    Plasmoid.configuration.cachedBootloader = "grub"
+                    
+                    checkForWindowsVersion()
+                    root.isLoading = false
+                    loadingTimer.stop()
+                    entriesLoaded(entries)
+                } catch(e) {
+                    console.error("BootDataManager: Error parsing GRUB JSON: " + e)
+                    root.errorMessage = i18n("Error parsing GRUB configuration.")
+                    root.isLoading = false
+                }
+                execSource.disconnectSource(sourceName)
+            }
             // ... (Windows logic remains same, it triggers updates via object ref) ...
             else if (sourceName === cmdWindowsVer && data["stdout"]) {
                  // ... existing windows logic ...
@@ -154,10 +255,13 @@ Item {
     Component.onCompleted: {
         updateWindowsVerCmd()
         var cached = Plasmoid.configuration.cachedBootEntries
+        var cachedLoader = Plasmoid.configuration.cachedBootloader
+        if (cachedLoader) root.activeBootloader = cachedLoader
+        
         console.log("BootDataManager: Component completed. Cache size: " + (cached ? cached.length : 0))
         if (cached && cached.length > 0) {
             try {
-                console.log("BootDataManager: Loading from cache")
+                console.log("BootDataManager: Loading from cache (" + root.activeBootloader + ")")
                 var rawCached = JSON.parse(cached)
                 root.bootEntries = processEntries(rawCached)
                 checkForWindowsVersion()
@@ -180,19 +284,33 @@ Item {
     function loadEntriesWithAuth() {
         console.log("BootDataManager: Requesting entries with Auth...")
         root.isLoading = true
+        root.errorMessage = ""
         loadingTimer.restart()
-        execSource.connectSource("pkexec bootctl list --json=short") 
+        
+        var cfgLoader = Plasmoid.configuration.cachedBootloader
+        if (cfgLoader) root.activeBootloader = cfgLoader
+        
+        if (root.activeBootloader === "grub") {
+             execSource.connectSource("pkexec " + root.cmdGrubParse)
+        } else {
+             execSource.connectSource("pkexec bootctl list --json=short") 
+        }
     }
 
     function rebootToEntry(id) {
         console.log("BootDataManager: Rebooting to " + id)
         var cmd = ""
-        if (id === "auto-reboot-to-firmware-setup" || id === "reboot-into-firmware-interface") {
-            // SetRebootToFirmwareSetup b true
-            cmd = "busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager SetRebootToFirmwareSetup b true"
+        if (root.activeBootloader === "grub") {
+             // Basic grub-reboot vs grub2-reboot check
+             cmd = "if command -v grub-reboot >/dev/null 2>&1; then pkexec grub-reboot \"" + id + "\"; elif command -v grub2-reboot >/dev/null 2>&1; then pkexec grub2-reboot \"" + id + "\"; fi"
         } else {
-             // SetRebootToBootLoaderEntry s "id"
-            cmd = "busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager SetRebootToBootLoaderEntry s \"" + id + "\""
+             if (id === "auto-reboot-to-firmware-setup" || id === "reboot-into-firmware-interface") {
+                 // SetRebootToFirmwareSetup b true
+                 cmd = "busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager SetRebootToFirmwareSetup b true"
+             } else {
+                  // SetRebootToBootLoaderEntry s "id"
+                 cmd = "busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager SetRebootToBootLoaderEntry s \"" + id + "\""
+             }
         }
         // Chain with reboot
         cmd += " && systemctl reboot"

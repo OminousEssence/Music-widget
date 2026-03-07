@@ -50,7 +50,7 @@
         "Name[tr]": "MGelişmiş Yeniden Başlatma",
         "Name[ur]": "ایڈوانسڈ ربوٹ",
         "Name[zh]": "高级重启",
-        "Version": "1.0",
+        "Version": "1.1",
         "Website": ""
     },
     "KPackageStructure": "Plasma/Applet",

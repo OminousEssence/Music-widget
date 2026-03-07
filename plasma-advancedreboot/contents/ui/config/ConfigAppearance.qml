@@ -16,6 +16,12 @@ Item {
     property string cfg_cachedBootEntries: ""
     property string cfg_cachedBootEntriesDefault: ""
     
+    property string cfg_customEntryRules: ""
+    property string cfg_customEntryRulesDefault: ""
+    
+    property string cfg_cachedBootloader: "systemd-boot"
+    property string cfg_cachedBootloaderDefault: "systemd-boot"
+    
     property double cfg_backgroundOpacity
     property int cfg_edgeMargin
     
@@ -35,15 +41,16 @@ Item {
         id: execSource
         engine: "executable"
         onNewData: (sourceName, data) => {
-            if (sourceName.indexOf("bootctl list") !== -1 && data["stdout"]) {
-                // Determine if valid JSON
+            if ((sourceName.indexOf("bootctl list") !== -1 || sourceName.indexOf("find_grub_entries") !== -1) && data["stdout"]) {
                 try {
                     var test = JSON.parse(data["stdout"])
                     if (test.length > 0) {
-                        // Success - Update Config
                         page.cfg_cachedBootEntries = data["stdout"]
                         feedbackLabel.text = i18n("Success! Entries updated.")
                         feedbackLabel.color = Kirigami.Theme.positiveTextColor
+                    } else {
+                         feedbackLabel.text = i18n("No entries found.")
+                         feedbackLabel.color = Kirigami.Theme.negativeTextColor
                     }
                 } catch(e) {
                     feedbackLabel.text = i18n("Error parsing output.")
@@ -51,6 +58,11 @@ Item {
                 }
                 loadingSpinner.running = false
                 execSource.disconnectSource(sourceName)
+            } else if (data["stderr"]) {
+                 feedbackLabel.text = i18n("Error: ") + (data["exit code"] ? data["exit code"] : "")
+                 feedbackLabel.color = Kirigami.Theme.negativeTextColor
+                 loadingSpinner.running = false
+                 execSource.disconnectSource(sourceName)
             }
         }
     }
@@ -64,7 +76,25 @@ Item {
 
         // Section: Display Logic
         Kirigami.FormLayout {
-            Layout.fillWidth: true
+            // Layout.fillWidth: true
+            
+            ComboBox {
+                id: bootloaderCombo
+                Kirigami.FormData.label: i18n("Bootloader:")
+                model: [
+                    "systemd-boot",
+                    "grub"
+                ]
+                // Layout.fillWidth: true
+                onCurrentIndexChanged: {
+                    if (currentIndex === 0) page.cfg_cachedBootloader = "systemd-boot"
+                    else if (currentIndex === 1) page.cfg_cachedBootloader = "grub"
+                }
+                Component.onCompleted: {
+                    if (page.cfg_cachedBootloader === "systemd-boot") currentIndex = 0
+                    else if (page.cfg_cachedBootloader === "grub") currentIndex = 1
+                }
+            }
             
             ComboBox {
                 id: viewModeCombo
@@ -185,7 +215,13 @@ Item {
                         loadingSpinner.running = true
                         feedbackLabel.text = i18n("Requesting permissions...")
                         feedbackLabel.color = Kirigami.Theme.textColor
-                        execSource.connectSource("pkexec bootctl list --json=short")
+                        if (page.cfg_cachedBootloader === "grub") {
+                            var grubScriptPath = Qt.resolvedUrl("../../tools/find_grub_entries.sh").toString()
+                            if (grubScriptPath.startsWith("file://")) grubScriptPath = grubScriptPath.substring(7)
+                            execSource.connectSource("pkexec sh -c '\"" + grubScriptPath + "\"'")
+                        } else {
+                            execSource.connectSource("pkexec bootctl list --json=short")
+                        }
                     }
                 }
                 

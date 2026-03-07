@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 04:19+0300\n"
+"POT-Creation-Date: 2026-03-07 04:48+0300\n"
 "PO-Revision-Date: 2026-03-07 04:06+0300\n"
 "Last-Translator: Antigravity\n"
 "Language-Team: Chinese (Simplified)\n"
@@ -11,43 +11,59 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: contents/ui/BootDataManager.qml:43
+#: contents/ui/BootDataManager.qml:51
 msgid "BIOS / Firmware"
 msgstr "BIOS / 固件"
 
-#: contents/ui/BootDataManager.qml:66
+#: contents/ui/BootDataManager.qml:129
+#, fuzzy
 msgid "System is not booted with systemd-boot or EFI is not active."
 msgstr "系统未通过 systemd-boot 启动或 EFI 未激活。"
 
-#: contents/ui/BootDataManager.qml:68
+#: contents/ui/BootDataManager.qml:131 contents/ui/BootDataManager.qml:143
 msgid "Authorization failed or canceled."
 msgstr "授权失败或已取消。"
 
-#: contents/ui/BootDataManager.qml:70
+#: contents/ui/BootDataManager.qml:133
 msgid "Systemd-boot error: "
 msgstr "Systemd-boot 错误："
 
-#: contents/ui/BootDataManager.qml:73
+#: contents/ui/BootDataManager.qml:136
 msgid "Systemd-boot failed with exit code: "
 msgstr "Systemd-boot 失败，退出代码："
 
-#: contents/ui/BootDataManager.qml:119
+#: contents/ui/BootDataManager.qml:145
+#, fuzzy
+msgid "Error reading GRUB configuration or requires root."
+msgstr "解析输出时出错。"
+
+#: contents/ui/BootDataManager.qml:185
+#, fuzzy
+msgid "System is not booted with systemd-boot and GRUB returns no entries."
+msgstr "系统未通过 systemd-boot 启动或 EFI 未激活。"
+
+#: contents/ui/BootDataManager.qml:203
+#, fuzzy
+msgid "Error parsing GRUB configuration."
+msgstr "解析输出时出错。"
+
+#: contents/ui/BootDataManager.qml:220
 msgid "Windows 11"
 msgstr "Windows 11"
 
-#: contents/ui/BootDataManager.qml:120
+#: contents/ui/BootDataManager.qml:221
 msgid "Windows 10"
 msgstr "Windows 10"
 
-#: contents/ui/BootDataManager.qml:121
+#: contents/ui/BootDataManager.qml:222
 msgid "Windows 8.1"
 msgstr "Windows 8.1"
 
-#: contents/ui/BootDataManager.qml:122
+#: contents/ui/BootDataManager.qml:223
 msgid "Windows 8"
 msgstr "Windows 8"
 
-#: contents/ui/BootDataManager.qml:123
+#: contents/ui/BootDataManager.qml:224
 msgid "Windows 7"
 msgstr "Windows 7"
 
@@ -100,86 +116,115 @@ msgstr "宽屏模式（即将推出）"
 msgid "Appearance"
 msgstr "外观"
 
-#: contents/ui/config/ConfigAppearance.qml:45
+#: contents/ui/config/ConfigAppearance.qml:46
 msgid "Success! Entries updated."
 msgstr "成功！启动项已更新。"
 
 #: contents/ui/config/ConfigAppearance.qml:49
+#, fuzzy
+msgid "No entries found."
+msgstr "未找到启动项"
+
+#: contents/ui/config/ConfigAppearance.qml:53
 msgid "Error parsing output."
 msgstr "解析输出时出错。"
 
-#: contents/ui/config/ConfigAppearance.qml:71
+#: contents/ui/config/ConfigAppearance.qml:59
+msgid "Error: "
+msgstr ""
+
+#: contents/ui/config/ConfigAppearance.qml:80
+msgid "Bootloader:"
+msgstr ""
+
+#: contents/ui/config/ConfigAppearance.qml:98
 msgid "Display Mode:"
 msgstr "显示模式:"
 
-#: contents/ui/config/ConfigAppearance.qml:73
+#: contents/ui/config/ConfigAppearance.qml:100
 msgid "Single Card (Large)"
 msgstr "单卡（大）"
 
-#: contents/ui/config/ConfigAppearance.qml:74
+#: contents/ui/config/ConfigAppearance.qml:101
 msgid "Standard List (Compact)"
 msgstr "标准列表（紧凑）"
 
-#: contents/ui/config/ConfigAppearance.qml:80
+#: contents/ui/config/ConfigAppearance.qml:107
 msgid "Single Card mode allows paging through entries one by one."
 msgstr "单卡模式允许逐个翻页查看项。"
 
-#: contents/ui/config/ConfigAppearance.qml:93
+#: contents/ui/config/ConfigAppearance.qml:120
 msgid "Visual Adjustments"
 msgstr "视觉调整"
 
-#: contents/ui/config/ConfigAppearance.qml:101
+#: contents/ui/config/ConfigAppearance.qml:128
 msgid "Background Opacity:"
 msgstr "背景不透明度:"
 
-#: contents/ui/config/ConfigAppearance.qml:117
+#: contents/ui/config/ConfigAppearance.qml:144
 msgid "Widget Margin:"
 msgstr "边距:"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "Normal (10px)"
 msgstr "常态 (10px)"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "Less (5px)"
 msgstr "较少 (5px)"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "None (0px)"
 msgstr "无 (0px)"
 
-#: contents/ui/config/ConfigAppearance.qml:134
+#: contents/ui/config/ConfigAppearance.qml:161
 msgid "List Item Height:"
 msgstr "列表项高度:"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Small (40px)"
 msgstr "小 (40px)"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Medium (60px)"
 msgstr "中 (60px)"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Large (80px)"
 msgstr "大 (80px)"
 
-#: contents/ui/config/ConfigAppearance.qml:161
+#: contents/ui/config/ConfigAppearance.qml:188
 msgid "Troubleshooting & Data"
 msgstr "故障排除与数据"
 
-#: contents/ui/config/ConfigAppearance.qml:172
+#: contents/ui/config/ConfigAppearance.qml:199
 msgid "Reset Cache"
 msgstr "重置缓存"
 
-#: contents/ui/config/ConfigAppearance.qml:175
+#: contents/ui/config/ConfigAppearance.qml:202
 msgid "Cache cleared."
 msgstr "缓存已清除。"
 
-#: contents/ui/config/ConfigAppearance.qml:182
+#: contents/ui/config/ConfigAppearance.qml:209
 msgid "Reload with Sudo"
 msgstr "使用 Sudo 重新加载"
 
-#: contents/ui/config/ConfigAppearance.qml:186
+#: contents/ui/config/ConfigAppearance.qml:213
 msgid "Requesting permissions..."
 msgstr "正在请求权限..."
+
+#: contents/ui/config/ConfigBootList.qml:10
+msgid "Boot List"
+msgstr ""
+
+#: contents/ui/config/ConfigBootList.qml:101
+msgid "Reorder entries by dragging. Configure visibility and custom names."
+msgstr ""
+
+#: contents/ui/config/ConfigBootList.qml:181
+msgid "Restore Defaults"
+msgstr ""
+
+#, fuzzy
+#~ msgid "System is not booted with systemd-boot and no GRUB config found."
+#~ msgstr "系统未通过 systemd-boot 启动或 EFI 未激活。"

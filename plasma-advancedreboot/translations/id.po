@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 04:19+0300\n"
+"POT-Creation-Date: 2026-03-07 04:48+0300\n"
 "PO-Revision-Date: 2026-03-07 04:06+0300\n"
 "Last-Translator: Antigravity\n"
 "Language-Team: Indonesian\n"
@@ -11,43 +11,59 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: contents/ui/BootDataManager.qml:43
+#: contents/ui/BootDataManager.qml:51
 msgid "BIOS / Firmware"
 msgstr "BIOS / Firmware"
 
-#: contents/ui/BootDataManager.qml:66
+#: contents/ui/BootDataManager.qml:129
+#, fuzzy
 msgid "System is not booted with systemd-boot or EFI is not active."
 msgstr "Sistem tidak di-boot dengan systemd-boot veya EFI tidak aktif."
 
-#: contents/ui/BootDataManager.qml:68
+#: contents/ui/BootDataManager.qml:131 contents/ui/BootDataManager.qml:143
 msgid "Authorization failed or canceled."
 msgstr "Autorisasi gagal atau dibatalkan."
 
-#: contents/ui/BootDataManager.qml:70
+#: contents/ui/BootDataManager.qml:133
 msgid "Systemd-boot error: "
 msgstr "Kesalahan systemd-boot: "
 
-#: contents/ui/BootDataManager.qml:73
+#: contents/ui/BootDataManager.qml:136
 msgid "Systemd-boot failed with exit code: "
 msgstr "Systemd-boot gagal dengan kode keluar: "
 
-#: contents/ui/BootDataManager.qml:119
+#: contents/ui/BootDataManager.qml:145
+#, fuzzy
+msgid "Error reading GRUB configuration or requires root."
+msgstr "Gagal memproses keluaran."
+
+#: contents/ui/BootDataManager.qml:185
+#, fuzzy
+msgid "System is not booted with systemd-boot and GRUB returns no entries."
+msgstr "Sistem tidak di-boot dengan systemd-boot veya EFI tidak aktif."
+
+#: contents/ui/BootDataManager.qml:203
+#, fuzzy
+msgid "Error parsing GRUB configuration."
+msgstr "Gagal memproses keluaran."
+
+#: contents/ui/BootDataManager.qml:220
 msgid "Windows 11"
 msgstr "Windows 11"
 
-#: contents/ui/BootDataManager.qml:120
+#: contents/ui/BootDataManager.qml:221
 msgid "Windows 10"
 msgstr "Windows 10"
 
-#: contents/ui/BootDataManager.qml:121
+#: contents/ui/BootDataManager.qml:222
 msgid "Windows 8.1"
 msgstr "Windows 8.1"
 
-#: contents/ui/BootDataManager.qml:122
+#: contents/ui/BootDataManager.qml:223
 msgid "Windows 8"
 msgstr "Windows 8"
 
-#: contents/ui/BootDataManager.qml:123
+#: contents/ui/BootDataManager.qml:224
 msgid "Windows 7"
 msgstr "Windows 7"
 
@@ -100,86 +116,115 @@ msgstr "Mode Lebar (Segera Hadir)"
 msgid "Appearance"
 msgstr "Tampilan"
 
-#: contents/ui/config/ConfigAppearance.qml:45
+#: contents/ui/config/ConfigAppearance.qml:46
 msgid "Success! Entries updated."
 msgstr "Berhasil! Entri diperbarui."
 
 #: contents/ui/config/ConfigAppearance.qml:49
+#, fuzzy
+msgid "No entries found."
+msgstr "Entri boot tidak ditemukan"
+
+#: contents/ui/config/ConfigAppearance.qml:53
 msgid "Error parsing output."
 msgstr "Gagal memproses keluaran."
 
-#: contents/ui/config/ConfigAppearance.qml:71
+#: contents/ui/config/ConfigAppearance.qml:59
+msgid "Error: "
+msgstr ""
+
+#: contents/ui/config/ConfigAppearance.qml:80
+msgid "Bootloader:"
+msgstr ""
+
+#: contents/ui/config/ConfigAppearance.qml:98
 msgid "Display Mode:"
 msgstr "Mode Tampilan:"
 
-#: contents/ui/config/ConfigAppearance.qml:73
+#: contents/ui/config/ConfigAppearance.qml:100
 msgid "Single Card (Large)"
 msgstr "Kartu Tunggal (Besar)"
 
-#: contents/ui/config/ConfigAppearance.qml:74
+#: contents/ui/config/ConfigAppearance.qml:101
 msgid "Standard List (Compact)"
 msgstr "Daftar Standar (Ringkas)"
 
-#: contents/ui/config/ConfigAppearance.qml:80
+#: contents/ui/config/ConfigAppearance.qml:107
 msgid "Single Card mode allows paging through entries one by one."
 msgstr "Mode kartu tunggal memungkinkan navigasi entri satu per satu."
 
-#: contents/ui/config/ConfigAppearance.qml:93
+#: contents/ui/config/ConfigAppearance.qml:120
 msgid "Visual Adjustments"
 msgstr "Penyesuaian Visual"
 
-#: contents/ui/config/ConfigAppearance.qml:101
+#: contents/ui/config/ConfigAppearance.qml:128
 msgid "Background Opacity:"
 msgstr "Opasitas Latar Belakang:"
 
-#: contents/ui/config/ConfigAppearance.qml:117
+#: contents/ui/config/ConfigAppearance.qml:144
 msgid "Widget Margin:"
 msgstr "Margin Widget:"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "Normal (10px)"
 msgstr "Normal (10px)"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "Less (5px)"
 msgstr "Sedikit (5px)"
 
-#: contents/ui/config/ConfigAppearance.qml:124
+#: contents/ui/config/ConfigAppearance.qml:151
 msgid "None (0px)"
 msgstr "Tidak ada (0px)"
 
-#: contents/ui/config/ConfigAppearance.qml:134
+#: contents/ui/config/ConfigAppearance.qml:161
 msgid "List Item Height:"
 msgstr "Tinggi Item Daftar:"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Small (40px)"
 msgstr "Kecil (40px)"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Medium (60px)"
 msgstr "Sedang (60px)"
 
-#: contents/ui/config/ConfigAppearance.qml:142
+#: contents/ui/config/ConfigAppearance.qml:169
 msgid "Large (80px)"
 msgstr "Besar (80px)"
 
-#: contents/ui/config/ConfigAppearance.qml:161
+#: contents/ui/config/ConfigAppearance.qml:188
 msgid "Troubleshooting & Data"
 msgstr "Pemecahan Masalah & Data"
 
-#: contents/ui/config/ConfigAppearance.qml:172
+#: contents/ui/config/ConfigAppearance.qml:199
 msgid "Reset Cache"
 msgstr "Reset Cache"
 
-#: contents/ui/config/ConfigAppearance.qml:175
+#: contents/ui/config/ConfigAppearance.qml:202
 msgid "Cache cleared."
 msgstr "Cache dibersihkan."
 
-#: contents/ui/config/ConfigAppearance.qml:182
+#: contents/ui/config/ConfigAppearance.qml:209
 msgid "Reload with Sudo"
 msgstr "Muat ulang dengan Sudo"
 
-#: contents/ui/config/ConfigAppearance.qml:186
+#: contents/ui/config/ConfigAppearance.qml:213
 msgid "Requesting permissions..."
 msgstr "Meminta izin..."
+
+#: contents/ui/config/ConfigBootList.qml:10
+msgid "Boot List"
+msgstr ""
+
+#: contents/ui/config/ConfigBootList.qml:101
+msgid "Reorder entries by dragging. Configure visibility and custom names."
+msgstr ""
+
+#: contents/ui/config/ConfigBootList.qml:181
+msgid "Restore Defaults"
+msgstr ""
+
+#, fuzzy
+#~ msgid "System is not booted with systemd-boot and no GRUB config found."
+#~ msgstr "Sistem tidak di-boot dengan systemd-boot veya EFI tidak aktif."
