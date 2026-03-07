@@ -46,6 +46,8 @@ Item {
 
             // Rename Firmware/BIOS entry
             if (entries[k].id === "auto-reboot-to-firmware-setup" || 
+                entries[k].id === "uefi-firmware" || 
+                entries[k].title === "UEFI Firmware Settings" || 
                 entries[k].title === "Reboot Into Firmware Interface" || 
                 entries[k].title.toLowerCase() === "reboot into firmware interface") {
                 entries[k].title = i18n("BIOS / Firmware")
@@ -275,6 +277,20 @@ Item {
         }
     }
     
+    Connections {
+        target: Plasmoid.configuration
+        function onCustomEntryRulesChanged() {
+            var cached = Plasmoid.configuration.cachedBootEntries
+            if (cached && cached.length > 0) {
+                try {
+                    var rawCached = JSON.parse(cached)
+                    root.bootEntries = processEntries(rawCached)
+                    checkForWindowsVersion()
+                } catch(e) {}
+            }
+        }
+    }
+
     function checkForWindowsVersion() {
         if (root.cmdWindowsVer !== "") {
              execSource.connectSource(root.cmdWindowsVer)
@@ -301,8 +317,9 @@ Item {
         console.log("BootDataManager: Rebooting to " + id)
         var cmd = ""
         if (root.activeBootloader === "grub") {
-             // Basic grub-reboot vs grub2-reboot check
-             cmd = "if command -v grub-reboot >/dev/null 2>&1; then pkexec grub-reboot \"" + id + "\"; elif command -v grub2-reboot >/dev/null 2>&1; then pkexec grub2-reboot \"" + id + "\"; fi"
+             // Basic grub-reboot vs grub2-reboot check with bash-safe quoting
+             var safeId = id.replace(/'/g, "'\\''")
+             cmd = "if command -v grub-reboot >/dev/null 2>&1; then pkexec grub-reboot '" + safeId + "'; elif command -v grub2-reboot >/dev/null 2>&1; then pkexec grub2-reboot '" + safeId + "'; else exit 1; fi"
         } else {
              if (id === "auto-reboot-to-firmware-setup" || id === "reboot-into-firmware-interface") {
                  // SetRebootToFirmwareSetup b true

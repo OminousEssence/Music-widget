@@ -121,6 +121,8 @@ Item {
                             width: parent.iconSize
                             height: parent.iconSize
                             source: {
+                                if (modelData.customIcon && modelData.customIcon !== "") return modelData.customIcon;
+                                
                                 var t = (modelData.title || "").toLowerCase()
                                 var i = (modelData.id || "").toLowerCase()
                                 if (modelData.isFirmware || t.includes("bios") || i === "auto-reboot-to-firmware-setup") return "application-x-firmware"
@@ -167,7 +169,7 @@ Item {
                                 
                                 return "system-run" 
                             }
-                            color: clickState === 0 ? Kirigami.Theme.textColor : "white"
+                            color: Kirigami.Theme.textColor
                         }
                     }
                     ColumnLayout {
@@ -182,7 +184,7 @@ Item {
                             }
                             font.pixelSize: 18
                             font.weight: Font.Light
-                            color: clickState === 0 ? Kirigami.Theme.textColor : "white"
+                            color: Kirigami.Theme.textColor
                             horizontalAlignment: Text.AlignHCenter
                             Layout.fillWidth: true
                             elide: Text.ElideRight
@@ -196,7 +198,7 @@ Item {
                             }
                             visible: text !== "" && (clickState === 0 || clickState === 2)
                             font.pixelSize: 12
-                            color: Qt.rgba(1,1,1,0.7)
+                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.75)
                             horizontalAlignment: Text.AlignHCenter
                             Layout.fillWidth: true
                             elide: Text.ElideRight

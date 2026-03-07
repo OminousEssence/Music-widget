@@ -27,9 +27,38 @@ Item {
     
     property int cfg_listItemHeight: 40
     property int cfg_listItemHeightDefault: 40
+    onCfg_backgroundOpacityChanged: {
+        var idx = opacityCombo.opacityValues.indexOf(cfg_backgroundOpacity)
+        if (idx !== -1) opacityCombo.currentIndex = idx
+    }
+    
+    onCfg_edgeMarginChanged: {
+        if (cfg_edgeMargin === 10) edgeMarginCombo.currentIndex = 0
+        else if (cfg_edgeMargin === 5) edgeMarginCombo.currentIndex = 1
+        else if (cfg_edgeMargin === 0) edgeMarginCombo.currentIndex = 2
+    }
+    
     onCfg_listItemHeightChanged: {
         var idx = listItemHeightCombo.heightValues.indexOf(cfg_listItemHeight)
         if (idx !== -1) listItemHeightCombo.currentIndex = idx
+    }
+    
+    Component.onCompleted: {
+        // Initial sync for opacity
+        var opIdx = opacityCombo.opacityValues.indexOf(cfg_backgroundOpacity)
+        if (opIdx !== -1) opacityCombo.currentIndex = opIdx
+        
+        // Initial sync for margin
+        if (cfg_edgeMargin === 10) edgeMarginCombo.currentIndex = 0
+        else if (cfg_edgeMargin === 5) edgeMarginCombo.currentIndex = 1
+        else if (cfg_edgeMargin === 0) edgeMarginCombo.currentIndex = 2
+        
+        // Initial sync for list item height
+        var liIdx = listItemHeightCombo.heightValues.indexOf(cfg_listItemHeight)
+        if (liIdx !== -1) listItemHeightCombo.currentIndex = liIdx
+        
+        // Initial sync for view mode
+        viewModeCombo.currentIndex = cfg_viewMode
     }
     
     // Defaults needed for KCM logic
@@ -169,8 +198,8 @@ Item {
                 ComboBox {
                     id: listItemHeightCombo
                     Layout.fillWidth: true
-                    model: [i18n("Small (40px)"), i18n("Medium (60px)"), i18n("Large (80px)")]
-                    property var heightValues: [40, 60, 80]
+                    model: [i18n("Small (40px)"), i18n("Compact (50px)"), i18n("Medium (60px)"), i18n("Tall (70px)"), i18n("Large (80px)")]
+                    property var heightValues: [40, 50, 60, 70, 80]
                     visible: viewModeCombo.currentIndex === 1
                     
                     onCurrentIndexChanged: {

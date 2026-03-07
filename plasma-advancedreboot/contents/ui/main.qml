@@ -14,11 +14,16 @@ import org.kde.kirigami as Kirigami
 PlasmoidItem {
     id: root
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
-    preferredRepresentation: fullRepresentation
-    Layout.preferredWidth: 200
-    Layout.preferredHeight: 200
-    Layout.minimumWidth: 80
-    Layout.minimumHeight: 80
+    preferredRepresentation: Plasmoid.formFactor === PlasmaCore.Types.Planar ? fullRepresentation : null
+    Plasmoid.icon: "system-reboot-symbolic"
+    Component.onCompleted: {
+        if (!Plasmoid.configuration.panelDefaultsApplied && Plasmoid.formFactor !== PlasmaCore.Types.Planar) {
+            Plasmoid.configuration.backgroundOpacity = 0.0
+            Plasmoid.configuration.edgeMargin = 0
+            Plasmoid.configuration.viewMode = 1
+            Plasmoid.configuration.panelDefaultsApplied = true
+        }
+    }
     
     Plasmoid.contextualActions: [
         PlasmaCore.Action {
@@ -39,16 +44,22 @@ PlasmoidItem {
     readonly property bool showWideMode: width >= 380
     readonly property bool showLargeMode: height >= 500 && width >= 380
     fullRepresentation: Item {
+        Layout.preferredWidth: 200
+        Layout.preferredHeight: 200
+        Layout.minimumWidth: 80
+        Layout.minimumHeight: 80
+        
         anchors.fill: parent
         
         // Configuration Properties
-        readonly property double backgroundOpacity: (Plasmoid.configuration.backgroundOpacity !== undefined) ? Plasmoid.configuration.backgroundOpacity : 1.0
-        readonly property int edgeMargin: (Plasmoid.configuration.edgeMargin !== undefined) ? Plasmoid.configuration.edgeMargin : 10
+        readonly property bool isPanel: Plasmoid.formFactor !== PlasmaCore.Types.Planar
+        readonly property double backgroundOpacity: isPanel ? 0.0 : ((Plasmoid.configuration.backgroundOpacity !== undefined) ? Plasmoid.configuration.backgroundOpacity : 1.0)
+        readonly property int edgeMargin: isPanel ? 0 : ((Plasmoid.configuration.edgeMargin !== undefined) ? Plasmoid.configuration.edgeMargin : 10)
 
         // Background
         Rectangle {
             anchors.fill: parent
-            anchors.margins: (Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical) ? 0 : edgeMargin
+            anchors.margins: edgeMargin
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, backgroundOpacity)
             radius: 20
             border.width: 0

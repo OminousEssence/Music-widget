@@ -177,15 +177,23 @@ msgstr "Yok (0px)"
 msgid "List Item Height:"
 msgstr "Liste Öge Yüksekliği:"
 
-#: contents/ui/config/ConfigAppearance.qml:169
+#: contents/ui/config/ConfigAppearance.qml:172
 msgid "Small (40px)"
 msgstr "Küçük (40px)"
 
-#: contents/ui/config/ConfigAppearance.qml:169
+#: contents/ui/config/ConfigAppearance.qml:172
+msgid "Compact (50px)"
+msgstr "Kompakt (50px)"
+
+#: contents/ui/config/ConfigAppearance.qml:172
 msgid "Medium (60px)"
 msgstr "Orta (60px)"
 
-#: contents/ui/config/ConfigAppearance.qml:169
+#: contents/ui/config/ConfigAppearance.qml:172
+msgid "Tall (70px)"
+msgstr "Uzun (70px)"
+
+#: contents/ui/config/ConfigAppearance.qml:172
 msgid "Large (80px)"
 msgstr "Büyük (80px)"
 
