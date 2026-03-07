@@ -10,6 +10,7 @@ Item {
     property var bootEntries: [] // Required for model
     property int activeIndex: -1
     property int edgeMargin: 10
+    property bool isPanel: false
     
     readonly property int itemHeight: height 
     readonly property bool isExtraSmall: width < 170 && height < 170
@@ -78,7 +79,7 @@ Item {
                     if (clickState === 2) return Qt.rgba(0.5, 0, 0, 0.5) // Red tint
                     return "transparent"
                 }
-                radius: Math.max(0, 20 - root.edgeMargin - 1)
+                radius: root.isPanel ? Kirigami.Units.cornerRadius : Math.max(0, 20 - root.edgeMargin - 1)
                 Behavior on color { ColorAnimation { duration: 200 } }
 
                 MouseArea {

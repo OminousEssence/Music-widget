@@ -61,7 +61,7 @@ PlasmoidItem {
             anchors.fill: parent
             anchors.margins: edgeMargin
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, backgroundOpacity)
-            radius: 20
+            radius: isPanel ? Kirigami.Units.cornerRadius : 20
             border.width: 0
             border.color: "transparent"
             
@@ -84,6 +84,9 @@ PlasmoidItem {
                         }
                         if (item.hasOwnProperty("edgeMargin")) {
                             item.edgeMargin = edgeMargin
+                        }
+                        if (item.hasOwnProperty("isPanel")) {
+                            item.isPanel = isPanel
                         }
                     }
                 }
