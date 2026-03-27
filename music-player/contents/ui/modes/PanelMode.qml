@@ -489,5 +489,12 @@ Item {
         }
 
         // Spacers removed - buttons now anchor to edges in all modes
+    WheelHandler {
+        onWheel: (wheel) => {
+            if (typeof root !== "undefined" && root.cfg_mouseWheelVolume) {
+                var delta = (wheel.angleDelta.y > 0) ? 0.05 : -0.05
+                root.adjustVolume(delta)
+            }
+        }
     }
 }

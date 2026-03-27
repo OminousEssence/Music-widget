@@ -15,6 +15,9 @@ Item {
     property double cfg_backgroundOpacity
     property double cfg_widgetScale
     property int cfg_contentPadding
+    property bool cfg_showSeconds
+    property int cfg_timeFormat
+    property int cfg_dateFormat
 
     // Default values
     property int cfg_edgeMarginDefault: 10
@@ -128,6 +131,53 @@ Item {
                 }
             }
         }
+
+        Kirigami.Separator {
+            Layout.fillWidth: true
+        }
+
+        Kirigami.FormLayout {
+            Layout.fillWidth: true
+            enabled: (plasmoid.formFactor === 2 || plasmoid.formFactor === 3) // 2=Horizontal, 3=Vertical
+
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("Panel Clock Settings")
+            }
+
+            CheckBox {
+                id: showSecondsCheckbox
+                Kirigami.FormData.label: i18n("Seconds:")
+                text: i18n("Show seconds")
+                checked: configAppearance.cfg_showSeconds
+                onCheckedChanged: configAppearance.cfg_showSeconds = checked
+            }
+
+            ComboBox {
+                id: timeFormatCombo
+                Kirigami.FormData.label: i18n("Time Format:")
+                Layout.fillWidth: true
+                model: [i18n("System Default"), i18n("12-Hour"), i18n("24-Hour")]
+                onCurrentIndexChanged: configAppearance.cfg_timeFormat = currentIndex
+            }
+
+            ComboBox {
+                id: dateFormatCombo
+                Kirigami.FormData.label: i18n("Date Format:")
+                Layout.fillWidth: true
+                model: [i18n("System Default"), "DD.MM.YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]
+                onCurrentIndexChanged: configAppearance.cfg_dateFormat = currentIndex
+            }
+            
+            Label {
+                visible: !parent.enabled
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                font.pixelSize: Kirigami.Units.smallFont.pixelSize
+                opacity: 0.6
+                text: i18n("These settings only apply when the widget is placed in a panel.")
+            }
+        }
     }
 
     Component.onCompleted: {
@@ -158,5 +208,10 @@ Item {
         // Initialize Background Opacity
         var currentOp = (cfg_backgroundOpacity !== undefined) ? cfg_backgroundOpacity : 1.0
         opacityCombo.currentIndex = getOpacityIndex(currentOp)
+
+        // Initialize Clock Settings
+        showSecondsCheckbox.checked = cfg_showSeconds || false
+        timeFormatCombo.currentIndex = cfg_timeFormat || 0
+        dateFormatCombo.currentIndex = cfg_dateFormat || 0
     }
 }

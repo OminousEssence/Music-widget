@@ -71,6 +71,7 @@ PlasmoidItem {
                 clip: true
                 anchors.margins: 1
                 source: {
+                    if (bootManager.isViewingSubMenu) return "RegularListView.qml"
                     if (root.showLargeMode) return "LargeView.qml"
                     if (root.showWideMode) return "WideView.qml"
                     if (Plasmoid.configuration.viewMode === 1) return "RegularListView.qml"
@@ -78,7 +79,7 @@ PlasmoidItem {
                 }
                 onLoaded: {
                     if (item) {
-                        item.bootEntries = bootManager.bootEntries
+                        item.bootEntries = bootManager.viewEntries
                         if (item.hasOwnProperty("bootManager")) {
                             item.bootManager = bootManager
                         }
@@ -93,7 +94,10 @@ PlasmoidItem {
                 Connections {
                     target: bootManager
                     function onEntriesLoaded(entries) {
-                        if (mainLoader.item) mainLoader.item.bootEntries = entries
+                        if (mainLoader.item) mainLoader.item.bootEntries = bootManager.viewEntries
+                    }
+                    function onViewEntriesChanged() {
+                         if (mainLoader.item) mainLoader.item.bootEntries = bootManager.viewEntries
                     }
                 }
             }
@@ -159,12 +163,27 @@ PlasmoidItem {
             
             ToolButton {
                 anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.margins: 4
+                z: 11
+                icon.name: "go-previous"
+                display: AbstractButton.IconOnly
+                visible: bootManager.isViewingSubMenu
+                onClicked: bootManager.closeSubMenu()
+                background: Rectangle { color: parent.hovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"; radius: 8 }
+                
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Back to Main List")
+            }
+
+            ToolButton {
+                anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: 4
                 z: 10
                 icon.name: "view-refresh"
                 display: AbstractButton.IconOnly
-                visible: !bootManager.isLoading
+                visible: !bootManager.isLoading && !bootManager.isViewingSubMenu
                 onClicked: bootManager.loadEntriesWithAuth()
                 background: Rectangle { color: parent.hovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"; radius: 8 }
             }

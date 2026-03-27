@@ -112,16 +112,19 @@ Item {
                 Kirigami.FormData.label: i18n("Bootloader:")
                 model: [
                     "systemd-boot",
-                    "grub"
+                    "grub",
+                    "limine"
                 ]
                 // Layout.fillWidth: true
                 onCurrentIndexChanged: {
                     if (currentIndex === 0) page.cfg_cachedBootloader = "systemd-boot"
                     else if (currentIndex === 1) page.cfg_cachedBootloader = "grub"
+                    else if (currentIndex === 2) page.cfg_cachedBootloader = "limine"
                 }
                 Component.onCompleted: {
                     if (page.cfg_cachedBootloader === "systemd-boot") currentIndex = 0
                     else if (page.cfg_cachedBootloader === "grub") currentIndex = 1
+                    else if (page.cfg_cachedBootloader === "limine") currentIndex = 2
                 }
             }
             
@@ -248,6 +251,10 @@ Item {
                             var grubScriptPath = Qt.resolvedUrl("../../tools/find_grub_entries.sh").toString()
                             if (grubScriptPath.startsWith("file://")) grubScriptPath = grubScriptPath.substring(7)
                             execSource.connectSource("pkexec sh -c '\"" + grubScriptPath + "\"'")
+                        } else if (page.cfg_cachedBootloader === "limine") {
+                            var limineScriptPath = Qt.resolvedUrl("../../tools/find_limine_entries.sh").toString()
+                            if (limineScriptPath.startsWith("file://")) limineScriptPath = limineScriptPath.substring(7)
+                            execSource.connectSource("pkexec sh -c '\"" + limineScriptPath + "\"'")
                         } else {
                             execSource.connectSource("pkexec bootctl list --json=short")
                         }

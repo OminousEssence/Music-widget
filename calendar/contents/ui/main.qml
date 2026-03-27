@@ -9,7 +9,9 @@ PlasmoidItem {
     id: root
 
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
-    preferredRepresentation: fullRepresentation
+    preferredRepresentation: (Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical) 
+                           ? compactRepresentation 
+                           : fullRepresentation
 
     // Load fonts
     FontLoader {
@@ -32,6 +34,11 @@ PlasmoidItem {
     property color highlightedTextColor: Kirigami.Theme.highlightedTextColor
     property color completedColor: Qt.alpha(Kirigami.Theme.textColor, 0.5)
     property color separatorColor: Qt.alpha(Kirigami.Theme.textColor, 0.2)
+    
+    // Panel Clock Configuration
+    readonly property bool cfg_showSeconds: Plasmoid.configuration.showSeconds || false
+    readonly property int cfg_timeFormatInfo: Plasmoid.configuration.timeFormat || 0
+    readonly property int cfg_dateFormatInfo: Plasmoid.configuration.dateFormat || 0
     
     // Weekday labels - bir kez hesaplanır, CalendarView'lara iletilir
     property var weekdayLabels: {
@@ -59,13 +66,32 @@ PlasmoidItem {
 
     
     Timer {
-        interval: 60000
+        interval: root.cfg_showSeconds ? 1000 : 60000
         running: true
         repeat: true
         onTriggered: {
             today = new Date()
-            // SwipeView içindeki sayfalar binding ile güncellenecek
         }
+    }
+
+    function getFormattedTime() {
+        var fmt = ""
+        if (root.cfg_timeFormatInfo === 1) { // 12h
+            fmt = root.cfg_showSeconds ? "hh:mm:ss AP" : "hh:mm AP"
+        } else if (root.cfg_timeFormatInfo === 2) { // 24h
+            fmt = root.cfg_showSeconds ? "HH:mm:ss" : "HH:mm"
+        } else {
+            // System Default
+            fmt = Qt.locale().timeFormat(root.cfg_showSeconds ? Locale.LongFormat : Locale.ShortFormat)
+        }
+        return Qt.formatDateTime(today, fmt)
+    }
+
+    function getFormattedDate() {
+        if (root.cfg_dateFormatInfo === 1) return Qt.formatDateTime(today, "dd.MM.yyyy")
+        if (root.cfg_dateFormatInfo === 2) return Qt.formatDateTime(today, "dd/MM/yyyy")
+        if (root.cfg_dateFormatInfo === 3) return Qt.formatDateTime(today, "yyyy-MM-dd")
+        return Qt.formatDateTime(today, Qt.locale().dateFormat(Locale.ShortFormat))
     }
 
     function getCalendarData(monthOffset) {
@@ -128,6 +154,48 @@ PlasmoidItem {
         return { label: label, cells: cells, year: displayYear, monthIndex: displayMonth }
     }
 
+    compactRepresentation: Item {
+        id: compactRep
+        
+        // Ensure we take the full height of the panel
+        Layout.preferredHeight: root.height
+        Layout.fillHeight: true
+        Layout.preferredWidth: Math.max(timeText.implicitWidth, dateText.implicitWidth) + 16
+        
+        Column {
+            anchors.centerIn: parent
+            spacing: -2
+            
+            Text {
+                id: timeText
+                text: root.getFormattedTime()
+                font.family: robotoFont.name
+                font.bold: true
+                font.pixelSize: Math.round(compactRep.height * 0.52)
+                color: root.textColor
+                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                renderType: Text.NativeRendering
+            }
+            Text {
+                id: dateText
+                text: root.getFormattedDate()
+                font.family: robotoFont.name
+                font.pixelSize: Math.round(compactRep.height * 0.33)
+                color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.8)
+                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                renderType: Text.NativeRendering
+            }
+        }
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.expanded = !root.expanded
+        }
+    }
 
     fullRepresentation: Item {
         id: fullRepItem

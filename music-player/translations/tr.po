@@ -220,3 +220,21 @@ msgstr "Hiçbir şey çalmadığında panelde gizle"
 msgid "Widget disappears from panel when paused or stopped."
 msgstr "Oynatma duraklatıldığında veya durdurulduğunda araç panelden kaybolur."
 
+msgid "Mouse Wheel Control"
+msgstr "Fare Tekerleği Kontrolü"
+
+msgid "Enable Volume Scroll:"
+msgstr "Ses Kaydırmayı Etkinleştir:"
+
+msgid "Change volume with mouse wheel in panel"
+msgstr "Paneldeyken fare tekerleği ile sesi değiştir"
+
+msgid "Volume Target:"
+msgstr "Ses Hedefi:"
+
+msgid "Active Media Player"
+msgstr "Aktif Medya Oynatıcı"
+
+msgid "System Master Volume"
+msgstr "Genel Sistem Sesi"
+

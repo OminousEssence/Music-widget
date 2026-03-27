@@ -117,19 +117,23 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         root.activeIndex = index
-                        if (clickState === 0) {
-                            clickState = 1
-                            resetTimer.start()
-                        } else if (clickState === 1) {
-                            resetTimer.stop()
-                            clickState = 2
-                            countdown = 2
-                            rebootTimer.start()
-                        } else if (clickState === 2) {
-                            // Cancel reboot
-                            rebootTimer.stop()
-                            clickState = 0
-                            countdown = 2
+                        if (entryData.isFolder) {
+                             if (root.bootManager) root.bootManager.openSubMenu(entryData)
+                        } else {
+                            if (clickState === 0) {
+                                clickState = 1
+                                resetTimer.start()
+                            } else if (clickState === 1) {
+                                resetTimer.stop()
+                                clickState = 2
+                                countdown = 2
+                                rebootTimer.start()
+                            } else if (clickState === 2) {
+                                // Cancel reboot
+                                rebootTimer.stop()
+                                clickState = 0
+                                countdown = 2
+                            }
                         }
                     }
                 }
@@ -148,17 +152,14 @@ Item {
                             Kirigami.Icon {
                                 anchors.fill: parent
                                 source: {
+                                    if (entryData.isFolder) return "folder-boot"
                                     if (entryData.customIcon && entryData.customIcon !== "") return entryData.customIcon;
                                     
-                                    var t = (entryData.title || "").toLowerCase()
-                                    var i = (entryData.id || "").toLowerCase()
-                                    if (entryData.isFirmware || t.includes("bios") || i === "auto-reboot-to-firmware-setup") return "application-x-firmware"
-                                    if (t.includes("limine") || i.includes("limine")) return "org.xfce.terminal-settings"
                                     if (t.includes("arch") || i.includes("arch")) return "distributor-logo-archlinux"
+                                    if (t.includes("cachyos") || i.includes("cachyos")) return "distributor-logo-cachyos"
                                     if (t.includes("manjaro")) return "distributor-logo-manjaro"
                                     if (t.includes("endeavour")) return "distributor-logo-endeavouros"
                                     if (t.includes("garuda")) return "distributor-logo-garuda"
-                                    if (t.includes("cachyos")) return "distributor-logo-cachyos"
                                     if (t.includes("gentoo")) return "distributor-logo-gentoo"
                                     if (t.includes("windows") || i.includes("windows")) return "distributor-logo-windows"
                                     if (t.includes("kubuntu")) return "distributor-logo-kubuntu"
@@ -191,6 +192,8 @@ Item {
                                     if (t.includes("parrot")) return "distributor-logo-parrot"
                                     if (t.includes("solus")) return "distributor-logo-solus"
                                     if (t.includes("steamos")) return "distributor-logo-steamos"
+                                    
+                                    if (t.includes("limine") || i.includes("limine")) return "org.xfce.terminal-settings"
                                     return "system-run" 
                                 }
                                 isMask: false

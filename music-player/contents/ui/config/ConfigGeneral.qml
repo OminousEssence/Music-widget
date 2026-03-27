@@ -62,6 +62,8 @@ Item {
     property bool cfg_panelShowAlbumArtDefault: false
     property int cfg_widgetRadius
     property int cfg_widgetRadiusDefault: 20
+    property bool cfg_mouseWheelVolume
+    property int cfg_volumeControlMode
 
     property string title: i18n("General")
 
@@ -279,6 +281,28 @@ Item {
         Kirigami.FormData.label: i18n("Show media player badge:")
         checked: cfg_showPlayerBadge
          onCheckedChanged: cfg_showPlayerBadge = checked
+    }
+
+    Kirigami.Separator {
+        Kirigami.FormData.isSection: true
+        Kirigami.FormData.label: i18n("Mouse Wheel Control")
+    }
+
+    CheckBox {
+        id: mouseWheelVolumeCheckbox
+        Kirigami.FormData.label: i18n("Enable Volume Scroll:")
+        text: i18n("Change volume with mouse wheel in panel")
+        checked: cfg_mouseWheelVolume
+        onCheckedChanged: cfg_mouseWheelVolume = checked
+    }
+
+    ComboBox {
+        id: volumeControlModeCombo
+        Kirigami.FormData.label: i18n("Volume Target:")
+        enabled: cfg_mouseWheelVolume
+        model: [i18n("Active Media Player"), i18n("System Master Volume")]
+        currentIndex: cfg_volumeControlMode
+        onCurrentIndexChanged: cfg_volumeControlMode = currentIndex
     }
 
     } // Kirigami.FormLayout

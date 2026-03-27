@@ -5,6 +5,7 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.private.mpris as Mpris
+import org.kde.plasma.private.volume as PlasmaPA
 
 import "js/PlayerData.js" as PlayerData
 import "components" as Components
@@ -46,6 +47,8 @@ PlasmoidItem {
     readonly property bool cfg_showVolumeSlider: Plasmoid.configuration.showVolumeSlider !== undefined ? Plasmoid.configuration.showVolumeSlider : false
     readonly property bool cfg_panelShowAlbumArt: Plasmoid.configuration.panelShowAlbumArt !== undefined ? Plasmoid.configuration.panelShowAlbumArt : false
     readonly property int cfg_widgetRadius: Plasmoid.configuration.widgetRadius !== undefined ? Plasmoid.configuration.widgetRadius : 20
+    readonly property bool cfg_mouseWheelVolume: Plasmoid.configuration.mouseWheelVolume !== undefined ? Plasmoid.configuration.mouseWheelVolume : true
+    readonly property int cfg_volumeControlMode: Plasmoid.configuration.volumeControlMode !== undefined ? Plasmoid.configuration.volumeControlMode : 0
 
     // Panel Detection
     readonly property bool isInPanel: (Plasmoid.formFactor == PlasmaCore.Types.Horizontal || Plasmoid.formFactor == PlasmaCore.Types.Vertical)
@@ -399,6 +402,35 @@ PlasmoidItem {
     }
 
     // ---------------------------------------------------------
+    // Volume Control Logic
+    // ---------------------------------------------------------
+    
+    // Lazy PulseAudio models
+    PlasmaPA.SinkModel { id: paSinkModel }
+    
+    function adjustVolume(delta) {
+        if (!cfg_mouseWheelVolume) return
+        
+        if (cfg_volumeControlMode === 0) {
+            // Media Player Volume
+            if (currentPlayer) {
+                var current = currentPlayer.volume
+                var newVol = Math.max(0, Math.min(1.0, current + delta))
+                currentPlayer.volume = newVol
+            }
+        } else {
+            // System Master Volume
+            var sink = paSinkModel.preferredSink
+            if (sink) {
+                var current = sink.volume
+                var step = delta * PlasmaPA.PulseAudio.NormalVolume
+                var newVol = Math.max(0, Math.min(PlasmaPA.PulseAudio.NormalVolume * 1.5, current + step))
+                sink.volume = newVol
+            }
+        }
+    }
+
+    // ---------------------------------------------------------
     // Representations
     // ---------------------------------------------------------
     preferredRepresentation: isInPanel ? compactRepresentation : fullRepresentation
@@ -506,6 +538,13 @@ PlasmoidItem {
             anchors.fill: parent
             z: -1
             onClicked: root.expanded = !root.expanded
+            // Handle mouse wheel for volume control
+            onWheel: (wheel) => {
+                if (root.cfg_mouseWheelVolume) {
+                    var delta = (wheel.angleDelta.y > 0) ? 0.05 : -0.05
+                    root.adjustVolume(delta)
+                }
+            }
         }
     }
     

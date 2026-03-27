@@ -6,43 +6,49 @@ Item {
     id: root
 
     property var bootEntries: []
+    property var viewEntries: [] // What is currently displayed (main or folder)
+    property bool isViewingSubMenu: false
+    property string subMenuTitle: ""
     property bool isLoading: false
     property string errorMessage: ""
 
     // Signals
     signal entriesLoaded(var entries)
-    
+
     // Command properties
+    property string cmdEntryFinder: ""
     property string cmdWindowsVer: ""
-    property string cmdGrubParse: ""
     property string activeBootloader: "systemd-boot"
 
-    function updateWindowsVerCmd() {
-        var scriptPath = Qt.resolvedUrl("../tools/find_windows_mount.sh").toString()
-        if (scriptPath.startsWith("file://")) {
-            scriptPath = scriptPath.substring(7)
+    function updatePaths() {
+        var winScriptPath = Qt.resolvedUrl("../tools/find_windows_mount.sh").toString()
+        if (winScriptPath.startsWith("file://")) {
+            winScriptPath = winScriptPath.substring(7)
         }
-        root.cmdWindowsVer = "sh \"" + scriptPath + "\""
+        root.cmdWindowsVer = "sh \"" + winScriptPath + "\""
         
-        var grubScriptPath = Qt.resolvedUrl("../tools/find_grub_entries.sh").toString()
-        if (grubScriptPath.startsWith("file://")) {
-            grubScriptPath = grubScriptPath.substring(7)
+        var finderScriptPath = Qt.resolvedUrl("../tools/boot_entry_finder.sh").toString()
+        if (finderScriptPath.startsWith("file://")) {
+            finderScriptPath = finderScriptPath.substring(7)
         }
-        root.cmdGrubParse = "sh \"" + grubScriptPath + "\""
+        root.cmdEntryFinder = "sh \"" + finderScriptPath + "\""
     }
     
     function processEntries(entries) {
         for (var k = 0; k < entries.length; k++) {
-            // Clean Title Logic
             var t = entries[k].title || ""
-            // Remove content in parentheses e.g. (KDE Plasma), (Workstation), (kernel version)
-            // User requested "Fedora Linux 44" from "Fedora Linux 44 (KDE...)"
-            t = t.replace(/\s*\(.*?\)/g, "")
+            var lowT = t.toLowerCase()
+            var isSnapshot = lowT.includes("snapper") || lowT.includes("snapshot") || lowT.includes("|") || t.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
             
-            // Note: We are keeping "Linux" as per latest user request "sadece Fedora Linux 44 yazmalı"
-            // If we wanted to remove Linux: t = t.replace(/ GNU\/Linux/g, "").replace(/ Linux/g, "")
+            if (!isSnapshot) {
+                // Remove content in parentheses e.g. (KDE Plasma), (Workstation), (kernel version)
+                // BUT ONLY if it's not a snapshot, because for snapshots the info is in parentheses/brackets
+                t = t.replace(/\s*\(.*?\)/g, "")
+                t = t.replace(/\s*\[.*?\]/g, "")
+            }
             
             entries[k].title = t.trim()
+            entries[k].isSnapshot = !!isSnapshot
 
             // Rename Firmware/BIOS entry
             if (entries[k].id === "auto-reboot-to-firmware-setup" || 
@@ -103,6 +109,34 @@ Item {
                     }
                 }
                 
+                // 3. Automatic Grouping for Snapshots (Limine-specific or general)
+                var loader = Plasmoid.configuration.cachedBootloader
+                if (loader === "limine") {
+                    var groupedFinal = []
+                    var snapshots = []
+                    for (var j = 0; j < finalEntries.length; j++) {
+                        var entry = finalEntries[j]
+                        if (entry.isSnapshot) {
+                            snapshots.push(entry)
+                        } else {
+                            groupedFinal.push(entry)
+                        }
+                    }
+                    
+                    if (snapshots.length > 0) {
+                        // Create a special folder entry
+                        var folder = {
+                            id: "folder-snapshots",
+                            title: "BTRFS Snapshots", // User requested this exact name
+                            isFolder: true,
+                            subEntries: snapshots
+                        }
+                        // Insert at a reasonable position (e.g. at the end or before firmware)
+                        groupedFinal.push(folder)
+                    }
+                    return groupedFinal
+                }
+                
                 return finalEntries
             } catch(jsonErr) {
                 console.error("BootDataManager: Failed to parse custom rules: " + jsonErr)
@@ -110,6 +144,25 @@ Item {
         }
         
         return entries
+    }
+    
+    function setRootEntries(entries) {
+        root.bootEntries = entries
+        if (!root.isViewingSubMenu) {
+            root.viewEntries = entries
+        }
+    }
+    
+    function openSubMenu(folder) {
+        root.viewEntries = folder.subEntries
+        root.subMenuTitle = folder.title
+        root.isViewingSubMenu = true
+    }
+    
+    function closeSubMenu() {
+        root.viewEntries = root.bootEntries
+        root.subMenuTitle = ""
+        root.isViewingSubMenu = false
     }
 
     Plasma5Support.DataSource {
@@ -120,90 +173,53 @@ Item {
             console.log("BootDataManager: New Data from " + sourceName)
             console.log("BootDataManager: Data keys: " + Object.keys(data).join(", "))
             
-            if (data["exit code"] !== undefined && data["exit code"] > 0) {
-                 console.error("BootDataManager: Command failed with exit code: " + data["exit code"])
-                 if (data["stderr"]) console.error("BootDataManager: Stderr: " + data["stderr"])
-                 
-                 if (sourceName.indexOf("bootctl list") !== -1) {
-                     if (data["stderr"]) {
-                         var errStr = data["stderr"].toLowerCase();
-                         if (errStr.includes("not booted with efi") || errStr.includes("systemd-boot not installed") || errStr.includes("efi variables") || errStr.includes("couldn't find efi")) {
-                             root.errorMessage = i18n("System is not booted with systemd-boot or EFI is not active.")
-                         } else if (data["exit code"] === 126 || data["exit code"] === 127 || errStr.includes("polkit")) {
-                             root.errorMessage = i18n("Authorization failed or canceled.")
-                         } else {
-                             root.errorMessage = i18n("Systemd-boot error: ") + data["stderr"]
-                         }
-                     } else {
-                         root.errorMessage = i18n("Systemd-boot failed with exit code: ") + data["exit code"]
-                     }
-                     root.isLoading = false
-                     loadingTimer.stop()
-                 } else if (sourceName.indexOf("find_grub_entries") !== -1) {
-                      var grubErrStr = data["stderr"] ? data["stderr"].toLowerCase() : "";
-                      if (data["exit code"] === 126 || data["exit code"] === 127 || grubErrStr.includes("polkit")) {
+             if (data["exit code"] !== undefined && data["exit code"] > 0) {
+                  console.error("BootDataManager: Command failed with exit code: " + data["exit code"])
+                  if (data["stderr"]) console.error("BootDataManager: Stderr: " + data["stderr"])
+                  
+                  if (sourceName.indexOf("boot_entry_finder.sh fetch") !== -1 || sourceName.indexOf("bootctl list") !== -1) {
+                      var errStr = data["stderr"] ? data["stderr"].toLowerCase() : "";
+                      if (data["exit code"] === 126 || data["exit code"] === 127 || errStr.includes("polkit")) {
                           root.errorMessage = i18n("Authorization failed or canceled.")
                       } else {
-                          root.errorMessage = i18n("Error reading GRUB configuration or requires root.")
+                          root.errorMessage = i18n("Failed to fetch boot entries. Check permissions.")
                       }
                       root.isLoading = false
                       loadingTimer.stop()
-                 }
-            } else {
-                 if (sourceName.indexOf("bootctl list") !== -1 || sourceName.indexOf("find_grub_entries") !== -1) {
-                     root.errorMessage = ""
-                 }
-            }
+                  }
+             } else {
+                  if (sourceName.indexOf("boot_entry_finder.sh") !== -1 || sourceName.indexOf("bootctl list") !== -1) {
+                      root.errorMessage = ""
+                  }
+             }
 
-            if (sourceName.indexOf("bootctl list") !== -1 && data["stdout"]) {
-                console.log("BootDataManager: Received bootctl output (length: " + data["stdout"].length + ")")
+            if (sourceName.indexOf("boot_entry_finder.sh") !== -1 && data["stdout"]) {
+                console.log("BootDataManager: Received unified entry data")
                 try {
-                    var rawEntries = JSON.parse(data["stdout"])
-                    console.log("BootDataManager: Parsed " + rawEntries.length + " entries")
+                    var response = JSON.parse(data["stdout"])
+                    if (response.bootloader) {
+                        root.activeBootloader = response.bootloader
+                        Plasmoid.configuration.cachedBootloader = response.bootloader
+                    }
+                    
+                    var rawEntries = response.entries || []
+                    console.log("BootDataManager: Parsed " + rawEntries.length + " entries for " + root.activeBootloader)
                     
                     var entries = processEntries(rawEntries)
 
                     root.bootEntries = entries
-                    Plasmoid.configuration.cachedBootEntries = data["stdout"]
+                    root.viewEntries = entries
+                    Plasmoid.configuration.cachedBootEntries = JSON.stringify(rawEntries)
                     
                     checkForWindowsVersion()
                     root.isLoading = false
-                    loadingTimer.stop() // Stop timer on success
+                    loadingTimer.stop() 
                     entriesLoaded(entries)
                     console.log("BootDataManager: Loading finished successfully")
                 } catch(e) {
-                    console.error("BootDataManager: Error parsing bootctl JSON: " + e)
-                    // Don't set isLoading false yet if we want to retry or debugging, but here it's fatal for this attempt
-                    root.isLoading = false
-                }
-                execSource.disconnectSource(sourceName)
-            } else if (sourceName.indexOf("find_grub_entries") !== -1 && data["stdout"]) {
-                console.log("BootDataManager: Received GRUB output")
-                try {
-                    var rawEntries = JSON.parse(data["stdout"])
-                    console.log("BootDataManager: Parsed " + rawEntries.length + " GRUB entries")
-                    
-                    if (rawEntries.length === 0) {
-                        root.errorMessage = i18n("System is not booted with systemd-boot and GRUB returns no entries.")
-                        root.isLoading = false
-                        loadingTimer.stop()
-                        execSource.disconnectSource(sourceName)
-                        return
-                    }
-
-                    var entries = processEntries(rawEntries)
-                    root.bootEntries = entries
-                    Plasmoid.configuration.cachedBootEntries = data["stdout"]
-                    Plasmoid.configuration.cachedBootloader = "grub"
-                    
-                    checkForWindowsVersion()
+                    console.error("BootDataManager: Error parsing unified JSON: " + e)
                     root.isLoading = false
                     loadingTimer.stop()
-                    entriesLoaded(entries)
-                } catch(e) {
-                    console.error("BootDataManager: Error parsing GRUB JSON: " + e)
-                    root.errorMessage = i18n("Error parsing GRUB configuration.")
-                    root.isLoading = false
                 }
                 execSource.disconnectSource(sourceName)
             }
@@ -255,7 +271,7 @@ Item {
     // ...
 
     Component.onCompleted: {
-        updateWindowsVerCmd()
+        updatePaths()
         var cached = Plasmoid.configuration.cachedBootEntries
         var cachedLoader = Plasmoid.configuration.cachedBootloader
         if (cachedLoader) root.activeBootloader = cachedLoader
@@ -265,7 +281,9 @@ Item {
             try {
                 console.log("BootDataManager: Loading from cache (" + root.activeBootloader + ")")
                 var rawCached = JSON.parse(cached)
-                root.bootEntries = processEntries(rawCached)
+                var entries = processEntries(rawCached)
+                root.bootEntries = entries
+                root.viewEntries = entries
                 checkForWindowsVersion()
             } catch(e) { 
                 console.error("BootDataManager: Cache corrupt")
@@ -298,18 +316,17 @@ Item {
     }
 
     function loadEntriesWithAuth() {
-        console.log("BootDataManager: Requesting entries with Auth...")
-        root.isLoading = true
+        console.log("BootDataManager: Requesting entries with Auth (Unified)...")
         root.errorMessage = ""
+        root.isLoading = true
         loadingTimer.restart()
         
-        var cfgLoader = Plasmoid.configuration.cachedBootloader
-        if (cfgLoader) root.activeBootloader = cfgLoader
-        
-        if (root.activeBootloader === "grub") {
-             execSource.connectSource("pkexec " + root.cmdGrubParse)
+        if (root.cmdEntryFinder !== "") {
+            // No arguments needed, script handles detection
+            execSource.connectSource("pkexec " + root.cmdEntryFinder)
         } else {
-             execSource.connectSource("pkexec bootctl list --json=short") 
+            // Fallback
+            execSource.connectSource("pkexec bootctl list --json=short")
         }
     }
 
@@ -320,6 +337,10 @@ Item {
              // Basic grub-reboot vs grub2-reboot check with bash-safe quoting
              var safeId = id.replace(/'/g, "'\\''")
              cmd = "if command -v grub-reboot >/dev/null 2>&1; then pkexec grub-reboot '" + safeId + "'; elif command -v grub2-reboot >/dev/null 2>&1; then pkexec grub2-reboot '" + safeId + "'; else exit 1; fi"
+        } else if (root.activeBootloader === "limine") {
+             // Limine supports setting default entry via limine-entry-tool
+             var safeLimineId = id.replace(/'/g, "'\\''")
+             cmd = "if command -v limine-entry-tool >/dev/null 2>&1; then pkexec limine-entry-tool --set-default '" + safeLimineId + "'; elif command -v limine-reboot >/dev/null 2>&1; then pkexec limine-reboot '" + safeLimineId + "'; else echo 'Limine reboot tool not found' >&2; exit 1; fi"
         } else {
              if (id === "auto-reboot-to-firmware-setup" || id === "reboot-into-firmware-interface") {
                  // SetRebootToFirmwareSetup b true
