@@ -8,7 +8,11 @@ GridView {
     required property var categoryModel
     
     clip: true
-    anchors.margins: Kirigami.Units.smallSpacing
+    property bool breezeStyle: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.breezeStyle ?? true) : true
+    property int animDuration: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.animationSpeed ?? 200) : 200
+    property int iconSize: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.iconSize ?? 48) : 48
+    property bool showLabels: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.showLabelsInTiles ?? true) : true
+
     cellWidth: Kirigami.Units.gridUnit * 6
     cellHeight: cellWidth + 30
     
@@ -25,16 +29,20 @@ GridView {
         required property var decoration
         
         property bool isHovered: hoverArea.containsMouse
-        
+        property bool breezeStyle: root.breezeStyle
+        property int animDuration: root.animDuration
+
         Rectangle {
             anchors.fill: parent
-            color: Kirigami.Theme.highlightColor
-            opacity: isHovered ? 0.2 : 0
+            color: breezeStyle 
+                ? (isHovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent")
+                : (isHovered ? Kirigami.Theme.highlightColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15))
+            opacity: 1
+            border.color: breezeStyle ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2) : "transparent"
+            border.width: breezeStyle ? 1 : 0
             radius: Kirigami.Units.smallSpacing
             
-            Behavior on opacity {
-                NumberAnimation { duration: Kirigami.Units.shortDuration }
-            }
+            Behavior on color { ColorAnimation { duration: animDuration } }
         }
         
         Column {
@@ -44,8 +52,8 @@ GridView {
             
             Kirigami.Icon {
                 source: decoration
-                width: Kirigami.Units.iconSizes.medium
-                height: Kirigami.Units.iconSizes.medium
+                width: root.iconSize
+                height: width
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             
@@ -58,6 +66,7 @@ GridView {
                 elide: Text.ElideRight
                 color: Kirigami.Theme.textColor
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                visible: root.showLabels
             }
         }
         

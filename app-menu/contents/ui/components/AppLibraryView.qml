@@ -36,10 +36,12 @@ Item {
         property real cellWidth: Math.floor(width / columns)
         property real cellHeight: root.cardSize + 40
         
-        Flow {
+        GridLayout {
             id: flowLayout
+            columns: flickable.columns
+            rowSpacing: 0
+            columnSpacing: 0
             width: flickable.width
-            spacing: 0
             
             property int expandedIndex: -1
             
@@ -53,13 +55,40 @@ Item {
                     
                     property bool isExpanded: flowLayout.expandedIndex === index
                     
-                    width: isExpanded ? flowLayout.width : flickable.cellWidth
-                    height: isExpanded ? folderCard.expandedHeight : flickable.cellHeight
+                    property int slotStart: {
+                        let expIdx = flowLayout.expandedIndex;
+                        if (expIdx === -1) return index;
+                        let cols = flickable.columns;
+                        let expRow = Math.floor(expIdx / cols);
+                        let baseRow = Math.floor(index / cols);
+                        let startOfExpRow = expRow * cols;
+                        
+                        if (baseRow < expRow) {
+                            return index;
+                        } else if (baseRow > expRow) {
+                            return index + cols - 1;
+                        } else {
+                            if (index === expIdx) {
+                                return startOfExpRow;
+                            } else if (index < expIdx) {
+                                return startOfExpRow + cols + (index % cols);
+                            } else {
+                                return startOfExpRow + cols + (index % cols) - 1;
+                            }
+                        }
+                    }
                     
-                    Behavior on width { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
-                    Behavior on height { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+                    Layout.row: Math.floor(slotStart / flickable.columns)
+                    Layout.column: slotStart % flickable.columns
+                    Layout.columnSpan: isExpanded ? flickable.columns : 1
                     
-                    // We need a slight bottom padding to space out the rows properly. Flow does it if siblings adjust height.
+                    Layout.preferredWidth: isExpanded ? flowLayout.width : flickable.cellWidth
+                    Layout.preferredHeight: isExpanded ? folderCard.expandedHeight : flickable.cellHeight
+                    
+                    Behavior on Layout.preferredWidth { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+                    
+                    // We need a slight bottom padding to space out the rows properly. GridLayout handles spacing, but we use 0 spacing and cell heights.
                     
                     AppFolderCard {
                         id: folderCard
@@ -85,8 +114,6 @@ Item {
                                 flowLayout.expandedIndex = -1 // Close
                             } else {
                                 flowLayout.expandedIndex = index // Open
-                                // Scroll to ensure it's visible?
-                                // Not strictly required but nice.
                             }
                         }
                     }

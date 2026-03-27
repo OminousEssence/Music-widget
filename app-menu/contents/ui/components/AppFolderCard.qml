@@ -18,6 +18,11 @@ Item {
     property real parentWidth: 0
     signal toggleExpand()
 
+    property bool breezeStyle: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.breezeStyle ?? true) : true
+    property int animDuration: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.animationSpeed ?? 200) : 200
+    property int configIconSize: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.iconSize ?? 48) : 48
+    property bool configShowLabels: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.showLabelsInTiles ?? true) : true
+
     // Grid sizing calculations
     property real cellW: Kirigami.Units.gridUnit * 6
     property real cellH: cellW + 30
@@ -43,13 +48,19 @@ Item {
         // When collapsed, the rectangle is square (doesn't cover the title)
         anchors.bottomMargin: root.isExpanded ? 0 : 30
         
-        color: root.isExpanded ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95) : (root.isHovered ? Kirigami.Theme.hoverColor : Kirigami.Theme.backgroundColor)
+        color: root.isExpanded 
+            ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95) 
+            : (root.isHovered 
+                ? (breezeStyle ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : Kirigami.Theme.hoverColor)
+                : (breezeStyle ? "transparent" : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.05)))
         radius: 12
-        border.color: root.isExpanded ? Kirigami.Theme.highlightColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.1)
-        border.width: root.isExpanded ? 2 : 1
+        border.color: root.isExpanded 
+            ? Kirigami.Theme.highlightColor 
+            : (breezeStyle ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : "transparent")
+        border.width: root.isExpanded ? 2 : (breezeStyle ? 1 : 0)
         
-        Behavior on color { ColorAnimation { duration: Kirigami.Units.shortDuration } }
-        Behavior on anchors.bottomMargin { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnimation { duration: animDuration } }
+        Behavior on anchors.bottomMargin { NumberAnimation { duration: animDuration; easing.type: Easing.OutCubic } }
 
         MouseArea {
             id: hoverArea
@@ -68,26 +79,30 @@ Item {
         Item {
             id: headerArea
             width: parent.width
-            height: root.cardSize
+            height: 40 // Thinner header
             opacity: root.isExpanded ? 1 : 0
             visible: opacity > 0
             anchors.top: parent.top
             
-            Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+            Behavior on opacity { NumberAnimation { duration: animDuration } }
             
             Text {
                 text: root.title
-                anchors.centerIn: parent
+                anchors.left: parent.left
+                anchors.leftMargin: 20
+                anchors.verticalCenter: parent.verticalCenter
                 font.bold: true
                 color: Kirigami.Theme.textColor
-                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize * 1.2
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
             }
             
             ToolButton {
                 icon.name: "window-close"
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.margins: 15
+                anchors.margins: 10
+                implicitWidth: 24
+                implicitHeight: 24
                 onClicked: root.toggleExpand()
             }
             
@@ -97,7 +112,7 @@ Item {
                 color: Kirigami.Theme.highlightColor
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                opacity: 0.3
+                opacity: 0.15
             }
         }
 
@@ -116,7 +131,7 @@ Item {
             
             opacity: root.isExpanded ? 1 : 0
             visible: opacity > 0
-            Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+            Behavior on opacity { NumberAnimation { duration: animDuration } }
             
             model: root.categoryModel
             
@@ -124,18 +139,75 @@ Item {
                 width: innerGrid.cellWidth
                 height: innerGrid.cellHeight
                 
+                id: staggeredItem
                 required property int index
                 required property string display
                 required property var decoration
                 
                 property bool isHovered: itemHoverArea.containsMouse
                 
+                // --- Animation Logic for Transition from Collapsed to Expanded ---
+                // Items 0-3 are visible in collapsed state.
+                // We want them to animate from their collapsed positions.
+                
+                readonly property bool isInitialItem: index < 4
+                
+                // Initial positions (offsets relative to final expanded position)
+                // This is a rough estimation since we don't have absolute coordinates easily
+                property real startX: {
+                    if (!isInitialItem) return 0
+                    // In collapsed, it's a 2x2 grid centered.
+                    // Let's just use a fixed offset to make it look like it's expanding from center.
+                    var col = index % 2
+                    var row = Math.floor(index / 2)
+                    return (col - 0.5) * 50
+                }
+                property real startY: {
+                    if (!isInitialItem) return -100 // Header height offset roughly
+                    var row = Math.floor(index / 2)
+                    return (row - 0.5) * 50 - 100
+                }
+
+                opacity: root.isExpanded ? 1 : 0
+                
+                transform: Translate {
+                    id: staggeredTranslate
+                    x: root.isExpanded ? 0 : staggeredItem.startX
+                    y: root.isExpanded ? 0 : staggeredItem.startY
+                    
+                    Behavior on x { NumberAnimation { duration: root.animDuration; easing.type: Easing.OutBack } }
+                    Behavior on y { NumberAnimation { duration: root.animDuration; easing.type: Easing.OutBack } }
+                }
+
+                readonly property int staggerDelay: isInitialItem ? 0 : (index - 3) * 50
+
+                SequentialAnimation {
+                    running: root.isExpanded
+                    PauseAnimation { duration: Math.max(0, staggeredItem.staggerDelay) }
+                    NumberAnimation {
+                        target: staggeredItem
+                        property: "opacity"
+                        to: 1
+                        duration: 200
+                    }
+                }
+
+                // Reset state when closed
+                onVisibleChanged: {
+                    if (!root.isExpanded) {
+                        staggeredItem.opacity = 0;
+                    }
+                }
+
                 Rectangle {
                     anchors.fill: parent
-                    color: Kirigami.Theme.highlightColor
-                    opacity: isHovered ? 0.2 : 0
+                    color: breezeStyle 
+                        ? (isHovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent")
+                        : (isHovered ? Kirigami.Theme.highlightColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2))
+                    opacity: 1
+                    border.width: 0 // Remove borders as requested
                     radius: Kirigami.Units.smallSpacing
-                    Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+                    Behavior on color { ColorAnimation { duration: animDuration } }
                 }
 
                 Column {
@@ -145,8 +217,8 @@ Item {
                     
                     Kirigami.Icon {
                         source: decoration
-                        width: Kirigami.Units.iconSizes.medium
-                        height: Kirigami.Units.iconSizes.medium
+                        width: root.configIconSize
+                        height: width
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     
@@ -166,10 +238,27 @@ Item {
                     id: itemHoverArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: {
-                        if (root.categoryModel && root.categoryModel.trigger) {
-                            root.categoryModel.trigger(index, "", null)
-                            try { Plasmoid.expanded = false; } catch(e) {}
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: (mouse) => {
+                        if (mouse.button === Qt.RightButton) {
+                            localContextMenu.actionItem = {
+                                display: display,
+                                decoration: decoration,
+                                matchId: display, // App name
+                                category: root.title,
+                                triggerFunc: function() {
+                                    if (root.categoryModel && root.categoryModel.trigger) {
+                                        root.categoryModel.trigger(index, "", null)
+                                        try { Plasmoid.expanded = false; } catch(e) {}
+                                    }
+                                }
+                            };
+                            localContextMenu.popup();
+                        } else {
+                            if (root.categoryModel && root.categoryModel.trigger) {
+                                root.categoryModel.trigger(index, "", null)
+                                try { Plasmoid.expanded = false; } catch(e) {}
+                            }
                         }
                     }
                 }
@@ -187,7 +276,7 @@ Item {
             opacity: root.isExpanded ? 0 : 1
             visible: opacity > 0
             
-            Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+            Behavior on opacity { NumberAnimation { duration: animDuration } }
 
             Grid {
                 anchors.centerIn: parent
@@ -273,7 +362,7 @@ Item {
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize * 0.8
                             color: Kirigami.Theme.textColor
                             maximumLineCount: 1
-                            visible: text !== "" && Plasmoid.configuration.showLabelsInTiles
+                            visible: text !== "" && root.configShowLabels
                         }
                     }
                     
@@ -316,6 +405,10 @@ Item {
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
         
-        Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+        Behavior on opacity { NumberAnimation { duration: animDuration } }
+    }
+    
+    AppContextMenu {
+        id: localContextMenu
     }
 }

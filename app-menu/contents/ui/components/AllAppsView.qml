@@ -11,6 +11,11 @@ ScrollView {
     
     contentWidth: availableWidth
     
+    property bool breezeStyle: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.breezeStyle ?? true) : true
+    property int animDuration: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.animationSpeed ?? 200) : 200
+    property int iconSize: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.iconSize ?? 48) : 48
+    property bool showLabels: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.showLabelsInTiles ?? true) : true
+
     property var sectionsList: []
 
     function refreshModel() {
@@ -40,6 +45,11 @@ ScrollView {
                  char = "#"
             }
 
+            
+            // Getting url role (often UserRole + 8 or 4 in Kicker, or we can just try to get it if possible)
+            // But since Kicker doesn't reliably expose it via simple Qt.UserRole in JS without roleNames,
+            // we'll rely on the original index if we need to interact with the model natively.
+            
             if (!groups[char]) {
                 groups[char] = []
             }
@@ -121,14 +131,21 @@ ScrollView {
                         
                         property bool isHovered: hoverArea.containsMouse
                         
+                        property bool breezeStyle: root.breezeStyle
+                        property int animDuration: root.animDuration
+                        
                         Rectangle {
                             anchors.fill: parent
-                            color: Kirigami.Theme.highlightColor
-                            opacity: isHovered ? 0.2 : 0
+                            color: breezeStyle 
+                                ? (isHovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent")
+                                : (isHovered ? Kirigami.Theme.highlightColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2))
+                            opacity: 1
+                            border.color: breezeStyle ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2) : "transparent"
+                            border.width: breezeStyle ? 1 : 0
                             radius: Kirigami.Units.smallSpacing
                             
-                            Behavior on opacity {
-                                NumberAnimation { duration: Kirigami.Units.shortDuration }
+                            Behavior on color {
+                                ColorAnimation { duration: animDuration }
                             }
                         }
                         
@@ -141,8 +158,8 @@ ScrollView {
                             Kirigami.Icon {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 source: modelData.icon
-                                width: Kirigami.Units.iconSizes.medium
-                                height: Kirigami.Units.iconSizes.medium
+                                width: root.iconSize
+                                height: width
                             }
                             
                             Text {
@@ -154,7 +171,7 @@ ScrollView {
                                 elide: Text.ElideRight
                                 color: Kirigami.Theme.textColor
                                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                                visible: Plasmoid.configuration.showLabelsInTiles
+                                visible: root.showLabels
                             }
                         }
                         
@@ -162,16 +179,37 @@ ScrollView {
                             id: hoverArea
                             anchors.fill: parent
                             hoverEnabled: true
-                            onClicked: {
-                                if (root.model) {
-                                    root.model.trigger(modelData.originalIndex, "", null)
-                                    Plasmoid.expanded = false
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onClicked: (mouse) => {
+                                if (mouse.button === Qt.RightButton) {
+                                    contextMenu.actionItem = {
+                                        display: modelData.name,
+                                        decoration: modelData.icon,
+                                        matchId: modelData.name, // Usually matchId is desktop entry name, but we only have name here
+                                        category: "System", // Treat as app to show "Edit Application"
+                                        triggerFunc: function() {
+                                            if (root.model) {
+                                                root.model.trigger(modelData.originalIndex, "", null)
+                                                Plasmoid.expanded = false
+                                            }
+                                        }
+                                    };
+                                    contextMenu.popup();
+                                } else {
+                                    if (root.model) {
+                                        root.model.trigger(modelData.originalIndex, "", null)
+                                        Plasmoid.expanded = false
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-        }
+                } // Ends Repeater
+            } // Ends Flow
+        } // Ends delegate ColumnLayout
+    } // Ends ListView
+    
+    AppContextMenu {
+        id: contextMenu
     }
-}
+} // Ends ScrollView

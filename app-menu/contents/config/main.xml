@@ -17,5 +17,11 @@
     <entry name="showLabelsInTiles" type="Bool">
       <default>true</default>
     </entry>
+    <entry name="breezeStyle" type="Bool">
+      <default>true</default>
+    </entry>
+    <entry name="animationSpeed" type="Int">
+      <default>200</default>
+    </entry>
   </group>
 </kcfg>

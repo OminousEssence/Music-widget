@@ -21,6 +21,13 @@ Item {
     // Full width layout binding logic
     visible: true 
     implicitHeight: topLayout.implicitHeight
+    
+    Behavior on implicitHeight {
+        NumberAnimation { 
+            duration: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.animationSpeed ?? 200) : 200
+            easing.type: Easing.InOutQuad 
+        }
+    }
 
     // Save and load functions
     function saveItems() {
@@ -67,7 +74,7 @@ Item {
                     Layout.preferredHeight: 16
                     color: Kirigami.Theme.highlightColor
                     
-                    Behavior on rotation { NumberAnimation { duration: 200 } }
+                    Behavior on rotation { NumberAnimation { duration: Plasmoid.configuration.animationSpeed ?? 200 } }
                 }
                 
                 Kirigami.Icon {
@@ -104,6 +111,9 @@ Item {
         // Pinned Container with DropArea
         Rectangle {
             id: containerRect
+            property bool breezeStyle: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.breezeStyle ?? true) : true
+            property int animDuration: typeof(Plasmoid) !== 'undefined' ? (Plasmoid.configuration.animationSpeed ?? 200) : 200
+            
             Layout.fillWidth: true
             Layout.preferredHeight: {
                 if (!root.isExpanded) return 0;
@@ -111,11 +121,13 @@ Item {
                 return tileFlow.implicitHeight + 16;
             }
             radius: 10
-            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.05)
+            color: breezeStyle ? "transparent" : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.05)
+            border.color: breezeStyle ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : "transparent"
+            border.width: breezeStyle ? 1 : 0
             clip: true
             
             Behavior on Layout.preferredHeight {
-                NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+                NumberAnimation { duration: containerRect.animDuration; easing.type: Easing.InOutQuad }
             }
             
             DropArea {
@@ -127,7 +139,7 @@ Item {
                     color: Kirigami.Theme.highlightColor
                     opacity: dropArea.containsDrag ? 0.3 : 0
                     radius: 10
-                    Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+                    Behavior on opacity { NumberAnimation { duration: animDuration } }
                 }
                 
                 onEntered: (drag) => {
@@ -208,16 +220,22 @@ Item {
                             color: Kirigami.Theme.highlightColor
                         }
                         
+                        property bool breezeStyle: Plasmoid.configuration.breezeStyle ?? true
+                        property int animDuration: (Plasmoid.configuration.animationSpeed ?? 200)
+                        
                         Rectangle {
                             id: tileContent
                             anchors.fill: parent
-                            color: tileMouse.containsMouse || isDragging
-                                ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
-                                : "transparent"
+                            color: breezeStyle 
+                                ? ((tileMouse.containsMouse || isDragging) ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent")
+                                : ((tileMouse.containsMouse || isDragging) ? Kirigami.Theme.highlightColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.05))
+                            border.color: breezeStyle ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2) : "transparent"
+                            border.width: breezeStyle ? 1 : 0
                             radius: 6
                             opacity: isDragging ? 0.6 : 1.0
                             
-                            Behavior on opacity { NumberAnimation { duration: 100 } }
+                            Behavior on color { ColorAnimation { duration: animDuration } }
+                            Behavior on opacity { NumberAnimation { duration: animDuration } }
                             
                             Column {
                                 anchors.centerIn: parent
@@ -302,7 +320,13 @@ Item {
                             
                             onClicked: (mouse) => {
                                 if (mouse.button === Qt.RightButton) {
-                                    contextMenu.currentItemMatchId = modelData.matchId
+                                    contextMenu.actionItem = {
+                                        display: modelData.display,
+                                        decoration: modelData.decoration,
+                                        matchId: modelData.matchId,
+                                        filePath: modelData.filePath,
+                                        category: "System" // Treat as app usually
+                                    };
                                     contextMenu.popup()
                                 } else if (!drag.active) {
                                     Qt.openUrlExternally(modelData.filePath)
@@ -316,17 +340,7 @@ Item {
         }
     }
 
-    Menu {
+    AppContextMenu {
         id: contextMenu
-        property string currentItemMatchId: ""
-        MenuItem {
-            text: i18n("Unpin")
-            icon.name: "window-unpin"
-            onTriggered: {
-                if (contextMenu.currentItemMatchId !== "") {
-                    root.unpinItem(contextMenu.currentItemMatchId)
-                }
-            }
-        }
     }
 }
