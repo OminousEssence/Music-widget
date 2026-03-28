@@ -15,6 +15,7 @@ Item {
     property bool cfg_panelShowArtist
     property bool cfg_panelAutoFontSize
     property bool cfg_panelScrollingText
+    property bool cfg_panelSmoothScrolling
     property int cfg_panelMaxWidth
     property int cfg_panelScrollingSpeed
     property int cfg_panelFontSize
@@ -40,6 +41,7 @@ Item {
     property bool cfg_panelShowArtistDefault: true
     property bool cfg_panelAutoFontSizeDefault: true
     property bool cfg_panelScrollingTextDefault: true
+    property bool cfg_panelSmoothScrollingDefault: false
     property int cfg_panelMaxWidthDefault: 350
     property int cfg_panelScrollingSpeedDefault: 0
     property int cfg_panelFontSizeDefault: 12
@@ -207,6 +209,14 @@ Item {
         text: i18n("Scroll Text if truncated")
         checked: configAppearance.cfg_panelScrollingText
         onCheckedChanged: configAppearance.cfg_panelScrollingText = checked
+    }
+    
+    CheckBox {
+        visible: configAppearance.cfg_panelScrollingText
+        Layout.leftMargin: 20
+        text: i18n("Smooth Scrolling")
+        checked: configAppearance.cfg_panelSmoothScrolling
+        onCheckedChanged: configAppearance.cfg_panelSmoothScrolling = checked
     }
     
     CheckBox {

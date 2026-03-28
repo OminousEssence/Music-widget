@@ -63,6 +63,10 @@
       <default>true</default>
       <label>Scroll Text in Panel if truncated</label>
     </entry>
+    <entry name="panelSmoothScrolling" type="Bool">
+      <default>false</default>
+      <label>Smooth Scrolling in Panel</label>
+    </entry>
     <entry name="panelMaxWidth" type="Int">
       <default>350</default>
       <label>Max Panel Width (px)</label>

@@ -32,6 +32,7 @@ PlasmoidItem {
     readonly property bool cfg_panelShowArtist: Plasmoid.configuration.panelShowArtist !== undefined ? Plasmoid.configuration.panelShowArtist : true
     readonly property bool cfg_panelAutoFontSize: Plasmoid.configuration.panelAutoFontSize !== undefined ? Plasmoid.configuration.panelAutoFontSize : true
     readonly property bool cfg_panelScrollingText: Plasmoid.configuration.panelScrollingText !== undefined ? Plasmoid.configuration.panelScrollingText : true
+    readonly property bool cfg_panelSmoothScrolling: Plasmoid.configuration.panelSmoothScrolling !== undefined ? Plasmoid.configuration.panelSmoothScrolling : false
     readonly property int cfg_panelMaxWidth: Plasmoid.configuration.panelMaxWidth !== undefined ? Plasmoid.configuration.panelMaxWidth : 350
     readonly property int cfg_panelScrollingSpeed: Plasmoid.configuration.panelScrollingSpeed !== undefined ? Plasmoid.configuration.panelScrollingSpeed : 0
     readonly property int cfg_panelFontSize: Plasmoid.configuration.panelFontSize !== undefined ? Plasmoid.configuration.panelFontSize : 12
@@ -511,6 +512,7 @@ PlasmoidItem {
                     item.showArtist = Qt.binding(() => root.cfg_panelShowArtist)
                     item.autoFontSize = Qt.binding(() => root.cfg_panelAutoFontSize)
                     item.scrollingText = Qt.binding(() => root.cfg_panelScrollingText)
+                    item.smoothScrolling = Qt.binding(() => root.cfg_panelSmoothScrolling)
                     item.maxWidth = Qt.binding(() => root.cfg_panelMaxWidth)
                     item.scrollingSpeed = Qt.binding(() => root.cfg_panelScrollingSpeed)
                     item.manualFontSize = Qt.binding(() => root.cfg_panelFontSize)

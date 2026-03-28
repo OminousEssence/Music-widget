@@ -34,6 +34,7 @@ Item {
     property int maxWidth: 350
     property int scrollingSpeed: 0 // 0: Fast, 1: Medium, 2: Slow
     property bool showAlbumArt: false
+    property bool smoothScrolling: false
     
     // Callbacks
     property var onPrevious: function() {}
@@ -96,8 +97,8 @@ Item {
     }
     
     RowLayout {
-        anchors.centerIn: parent
-        width: parent.width
+        anchors.fill: parent
+        anchors.margins: 2
         spacing: panelMode.layoutMode === 2 ? 5 : 10
         layoutDirection: Qt.LeftToRight
 
@@ -197,15 +198,14 @@ Item {
         Item {
             id: textContainer
             Layout.fillWidth: true
+            Layout.fillHeight: true
             Layout.alignment: Qt.AlignVCenter
+            Layout.minimumWidth: 40
             clip: true
-            
-            implicitHeight: textColumn.implicitHeight
             
             ColumnLayout {
                 id: textColumn
-                anchors.centerIn: parent
-                width: parent.width
+                anchors.fill: parent
                 spacing: 0
                 
                 // Font Logic - Cached
@@ -223,198 +223,168 @@ Item {
                     if (panelMode.layoutMode === 2) return Text.AlignHCenter
                     return Text.AlignLeft
                 }
-                
-                // Title Text with optimized scrolling
-                Text {
-                    id: titleText
-                    text: _displayText
-                    color: Kirigami.Theme.textColor
-                    font.family: "Roboto Condensed"
-                    font.bold: true
-                    font.pixelSize: parent.calculatedPixelSize
-                    elide: _shouldScroll ? Text.ElideNone : Text.ElideRight
+
+                // Title Section
+                Item {
+                    id: titleItem
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    horizontalAlignment: parent.textAlign
-                    verticalAlignment: Text.AlignVCenter
+                    Layout.preferredHeight: titleMetrics.height
+                    Layout.alignment: panelMode.layoutMode === 1 ? Qt.AlignRight : (panelMode.layoutMode === 2 ? Qt.AlignHCenter : Qt.AlignLeft)
                     visible: panelMode.showTitle
-                    
-                    // Scrolling Logic - Optimized
-                    property string fullText: panelMode.title || i18n("No Media")
-                    property string _displayText: fullText
-                    property bool _shouldScroll: false
-                    property int _scrollIndex: 0
-                    property string _scrollBuffer: ""
-                    
-                    // Lazy text measurement - only measure when needed
-                    readonly property real measuredWidth: _textMetrics.advanceWidth
-                    readonly property bool textOverflows: panelMode.scrollingText && measuredWidth > textContainer.width && textContainer.width > 0
-                    
+                    clip: true
+
                     TextMetrics {
-                        id: _textMetrics
-                        font: titleText.font
-                        text: titleText.fullText
+                        id: titleMetrics
+                        font.family: "Roboto Condensed"
+                        font.bold: true
+                        font.pixelSize: textColumn.calculatedPixelSize
+                        text: panelMode.title || i18n("No Media")
                     }
-                    
-                    function startScrolling() {
-                        if (!_shouldScroll && textOverflows) {
-                            _shouldScroll = true
-                            _scrollIndex = 0
-                            _scrollBuffer = fullText + "   •   "
-                            _displayText = _scrollBuffer
+
+                    readonly property bool overflows: titleMetrics.advanceWidth > parent.width
+                    readonly property bool shouldScroll: panelMode.scrollingText && overflows
+
+                    // Smooth Scroll Layer
+                    Row {
+                        id: titleSmoothRow
+                        visible: panelMode.smoothScrolling && parent.shouldScroll
+                        x: 0
+                        spacing: 40
+                        
+                        Text {
+                            text: titleMetrics.text
+                            color: Kirigami.Theme.textColor
+                            font: titleMetrics.font
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: titleMetrics.text
+                            color: Kirigami.Theme.textColor
+                            font: titleMetrics.font
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        NumberAnimation on x {
+                            id: titleSmoothAnim
+                            from: 0
+                            to: -(titleMetrics.advanceWidth + titleSmoothRow.spacing)
+                            duration: (titleMetrics.advanceWidth + titleSmoothRow.spacing) * (panelMode.scrollingSpeed === 1 ? 40 : (panelMode.scrollingSpeed === 2 ? 60 : 30))
+                            loops: Animation.Infinite
+                            running: titleSmoothRow.visible
                         }
                     }
-                    
-                    function stopScrolling() {
-                        _shouldScroll = false
-                        _scrollIndex = 0
-                        _displayText = fullText
-                    }
-                    
-                    function updateScroll() {
-                        if (!_shouldScroll) return
-                        _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
-                        _displayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
-                    }
-                    
-                    onTextOverflowsChanged: {
-                        if (textOverflows) {
-                            Qt.callLater(startScrolling)
-                        } else {
-                            stopScrolling()
+
+                    // Stepped Scroll / Static Layer
+                    Text {
+                        id: titleSteppedText
+                        visible: !titleSmoothRow.visible
+                        anchors.fill: parent
+                        text: parent.shouldScroll ? _charDisplayText : titleMetrics.text
+                        color: Kirigami.Theme.textColor
+                        font: titleMetrics.font
+                        horizontalAlignment: textColumn.textAlign
+                        verticalAlignment: Text.AlignVCenter
+                        elide: parent.shouldScroll ? Text.ElideNone : Text.ElideRight
+
+                        property string _charDisplayText: titleMetrics.text
+                        property int _scrollIndex: 0
+                        property string _scrollBuffer: titleMetrics.text + "   •   "
+
+                        function updateScroll() {
+                            _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
+                            _charDisplayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
                         }
-                    }
-                    
-                    onFullTextChanged: {
-                        stopScrolling()
-                        Qt.callLater(() => { if (textOverflows) startScrolling() })
-                    }
-                    
-                    Connections {
-                        target: panelMode
-                        function onScrollingTextChanged() { 
-                            if (panelMode.scrollingText) {
-                                Qt.callLater(() => { if (titleText.textOverflows) titleText.startScrolling() })
-                            } else {
-                                titleText.stopScrolling()
-                            }
+
+                        Timer {
+                            interval: panelMode.scrollInterval
+                            running: titleSteppedText.visible && titleItem.shouldScroll && !panelMode.smoothScrolling
+                            repeat: true
+                            onTriggered: titleSteppedText.updateScroll()
+                            onRunningChanged: if (!running) titleSteppedText._scrollIndex = 0
                         }
-                    }
-                    
-                    Connections {
-                        target: textContainer
-                        function onWidthChanged() {
-                            if (titleText.textOverflows && !titleText._shouldScroll) {
-                                Qt.callLater(titleText.startScrolling)
-                            } else if (!titleText.textOverflows && titleText._shouldScroll) {
-                                titleText.stopScrolling()
-                            }
-                        }
-                    }
-                    
-                    Timer {
-                        interval: panelMode.scrollInterval
-                        running: titleText._shouldScroll && panelMode.scrollingText
-                        repeat: true
-                        onTriggered: titleText.updateScroll()
                     }
                 }
-                
-                // Artist Text with optimized scrolling
-                Text {
-                    id: artistText
-                    text: _displayText
-                    color: Kirigami.Theme.textColor
-                    opacity: 0.8
-                    font.family: "Roboto Condensed"
-                    font.pixelSize: parent.artistPixelSize
-                    elide: _shouldScroll ? Text.ElideNone : Text.ElideRight
+
+                // Artist Section
+                Item {
+                    id: artistItem
                     Layout.fillWidth: true
-                    horizontalAlignment: parent.textAlign
-                    verticalAlignment: Text.AlignVCenter
+                    Layout.preferredHeight: artistMetrics.height
+                    Layout.alignment: panelMode.layoutMode === 1 ? Qt.AlignRight : (panelMode.layoutMode === 2 ? Qt.AlignHCenter : Qt.AlignLeft)
                     visible: panelMode.showArtist && panelMode.artist && panelMode.artist.trim() !== ""
-                    Layout.preferredHeight: visible ? implicitHeight : 0
-                    Layout.minimumHeight: 0
-                    Layout.maximumHeight: visible ? implicitHeight : 0
-                    
-                    // Scrolling Logic - Optimized
-                    property string fullText: panelMode.artist || ""
-                    property string _displayText: fullText
-                    property bool _shouldScroll: false
-                    property int _scrollIndex: 0
-                    property string _scrollBuffer: ""
-                    
-                    // Lazy text measurement
-                    readonly property real measuredWidth: _artistMetrics.advanceWidth
-                    readonly property bool textOverflows: panelMode.scrollingText && measuredWidth > textContainer.width && textContainer.width > 0
-                    
+                    clip: true
+
                     TextMetrics {
-                        id: _artistMetrics
-                        font: artistText.font
-                        text: artistText.fullText
+                        id: artistMetrics
+                        font.family: "Roboto Condensed"
+                        font.pixelSize: textColumn.artistPixelSize
+                        text: panelMode.artist || ""
                     }
-                    
-                    function startScrolling() {
-                        if (!_shouldScroll && textOverflows) {
-                            _shouldScroll = true
-                            _scrollIndex = 0
-                            _scrollBuffer = fullText + "   •   "
-                            _displayText = _scrollBuffer
+
+                    readonly property bool overflows: artistMetrics.advanceWidth > parent.width
+                    readonly property bool shouldScroll: panelMode.scrollingText && overflows
+
+                    // Smooth Scroll Layer
+                    Row {
+                        id: artistSmoothRow
+                        visible: panelMode.smoothScrolling && parent.shouldScroll
+                        x: 0
+                        spacing: 40
+                        
+                        Text {
+                            text: artistMetrics.text
+                            color: Kirigami.Theme.textColor
+                            opacity: 0.8
+                            font: artistMetrics.font
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: artistMetrics.text
+                            color: Kirigami.Theme.textColor
+                            opacity: 0.8
+                            font: artistMetrics.font
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        NumberAnimation on x {
+                            id: artistSmoothAnim
+                            from: 0
+                            to: -(artistMetrics.advanceWidth + artistSmoothRow.spacing)
+                            duration: (artistMetrics.advanceWidth + artistSmoothRow.spacing) * (panelMode.scrollingSpeed === 1 ? 40 : (panelMode.scrollingSpeed === 2 ? 60 : 30))
+                            loops: Animation.Infinite
+                            running: artistSmoothRow.visible
                         }
                     }
-                    
-                    function stopScrolling() {
-                        _shouldScroll = false
-                        _scrollIndex = 0
-                        _displayText = fullText
-                    }
-                    
-                    function updateScroll() {
-                        if (!_shouldScroll) return
-                        _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
-                        _displayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
-                    }
-                    
-                    onTextOverflowsChanged: {
-                        if (textOverflows) {
-                            Qt.callLater(startScrolling)
-                        } else {
-                            stopScrolling()
+
+                    // Stepped Scroll / Static Layer
+                    Text {
+                        id: artistSteppedText
+                        visible: !artistSmoothRow.visible
+                        anchors.fill: parent
+                        text: parent.shouldScroll ? _charDisplayText : artistMetrics.text
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.8
+                        font: artistMetrics.font
+                        horizontalAlignment: textColumn.textAlign
+                        verticalAlignment: Text.AlignVCenter
+                        elide: parent.shouldScroll ? Text.ElideNone : Text.ElideRight
+
+                        property string _charDisplayText: artistMetrics.text
+                        property int _scrollIndex: 0
+                        property string _scrollBuffer: artistMetrics.text + "   •   "
+
+                        function updateScroll() {
+                            _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
+                            _charDisplayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
                         }
-                    }
-                    
-                    onFullTextChanged: {
-                        stopScrolling()
-                        Qt.callLater(() => { if (textOverflows) startScrolling() })
-                    }
-                    
-                    Connections {
-                        target: panelMode
-                        function onScrollingTextChanged() { 
-                            if (panelMode.scrollingText) {
-                                Qt.callLater(() => { if (artistText.textOverflows) artistText.startScrolling() })
-                            } else {
-                                artistText.stopScrolling()
-                            }
+
+                        Timer {
+                            interval: panelMode.scrollInterval
+                            running: artistSteppedText.visible && artistItem.shouldScroll && !panelMode.smoothScrolling
+                            repeat: true
+                            onTriggered: artistSteppedText.updateScroll()
+                            onRunningChanged: if (!running) artistSteppedText._scrollIndex = 0
                         }
-                    }
-                    
-                    Connections {
-                        target: textContainer
-                        function onWidthChanged() {
-                            if (artistText.textOverflows && !artistText._shouldScroll) {
-                                Qt.callLater(artistText.startScrolling)
-                            } else if (!artistText.textOverflows && artistText._shouldScroll) {
-                                artistText.stopScrolling()
-                            }
-                        }
-                    }
-                    
-                    Timer {
-                        interval: panelMode.scrollInterval
-                        running: artistText._shouldScroll && panelMode.scrollingText && artistText.visible
-                        repeat: true
-                        onTriggered: artistText.updateScroll()
                     }
                 }
             }
