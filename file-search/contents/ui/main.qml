@@ -132,6 +132,8 @@ PlasmoidItem {
         searchTextLength: root.searchText.length
         panelRadius: Plasmoid.configuration.panelRadius
         panelHeight: Plasmoid.configuration.panelHeight
+        showSearchButton: Plasmoid.configuration.showSearchButton
+        showSearchButtonBackground: Plasmoid.configuration.showSearchButtonBackground
         
         onToggleExpanded: root.expanded = !root.expanded
     }

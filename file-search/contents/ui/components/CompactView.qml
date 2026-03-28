@@ -19,6 +19,8 @@ Item {
     required property int searchTextLength
     required property int panelRadius
     required property int panelHeight
+    required property bool showSearchButton
+    required property bool showSearchButtonBackground
     
     // Signals
     signal toggleExpanded()
@@ -64,7 +66,7 @@ Item {
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: (compactRoot.isWideMode || compactRoot.isExtraWideMode) ? 10 : 0
-            anchors.rightMargin: (compactRoot.isWideMode || compactRoot.isExtraWideMode) ? 4 : 0
+            anchors.rightMargin: (compactRoot.isWideMode || compactRoot.isExtraWideMode) ? (compactRoot.showSearchButton ? 4 : 10) : 0
             spacing: 6
             
             // Display text (not editable - shows placeholder or search text)
@@ -84,12 +86,12 @@ Item {
             // Search Icon Button (Wide and Extra Wide Mode only)
             Rectangle {
                 id: searchIconButton
-                Layout.preferredWidth: (compactRoot.isWideMode || compactRoot.isExtraWideMode) ? (mainButton.height - 6) : 0
+                Layout.preferredWidth: ((compactRoot.isWideMode || compactRoot.isExtraWideMode) && compactRoot.showSearchButton) ? (mainButton.height - 6) : 0
                 Layout.preferredHeight: mainButton.height - 6
                 Layout.alignment: Qt.AlignVCenter
                 radius: compactRoot.panelRadius === 0 ? width / 2 : (compactRoot.panelRadius === 1 ? 8 : (compactRoot.panelRadius === 2 ? 4 : 0))
-                color: compactRoot.accentColor
-                visible: compactRoot.isWideMode || compactRoot.isExtraWideMode
+                color: compactRoot.showSearchButtonBackground ? compactRoot.accentColor : "transparent"
+                visible: (compactRoot.isWideMode || compactRoot.isExtraWideMode) && compactRoot.showSearchButton
                 
                 Behavior on Layout.preferredWidth { NumberAnimation { duration: 200 } }
                 
@@ -98,7 +100,7 @@ Item {
                     width: parent.width * 0.55
                     height: width
                     source: "search"
-                    color: "#ffffff"
+                    color: compactRoot.showSearchButtonBackground ? "#ffffff" : compactRoot.textColor
                 }
             }
         }

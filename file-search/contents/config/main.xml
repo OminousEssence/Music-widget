@@ -12,6 +12,14 @@
       <default>1</default>
       <label>Display Mode: 0=Button, 1=Medium, 2=Wide, 3=Extra Wide</label>
     </entry>
+    <entry name="showSearchButton" type="Bool">
+      <default>true</default>
+      <label>Show search icon button in panel</label>
+    </entry>
+    <entry name="showSearchButtonBackground" type="Bool">
+      <default>true</default>
+      <label>Show background tile behind search icon</label>
+    </entry>
 
     <entry name="userProfile" type="Int">
       <default>0</default>

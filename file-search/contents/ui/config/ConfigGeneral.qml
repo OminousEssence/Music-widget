@@ -32,6 +32,8 @@ Item {
     property int cfg_panelHeight
 
     property alias cfg_showBootOptions: showBootOptionsSearch.checked
+    property alias cfg_showSearchButton: showSearchButtonCheck.checked
+    property alias cfg_showSearchButtonBackground: showSearchButtonBackgroundCheck.checked
     property int cfg_userProfile
     
     // Popup (View + Search Limits)
@@ -114,6 +116,8 @@ Item {
     property string cfg_weatherCacheDefault
     property string cfg_weatherLastUpdateDefault
     property string cfg_weatherUnitsDefault
+    property bool cfg_showSearchButtonDefault
+    property bool cfg_showSearchButtonBackgroundDefault
 
     // Internal
     property var previewSettings: ({})
@@ -208,6 +212,21 @@ Item {
                         Layout.fillWidth: true
                     }
 
+                    CheckBox {
+                        id: showSearchButtonCheck
+                        Kirigami.FormData.label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search Icon")
+                        text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show search icon and button in panel")
+                        enabled: displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3
+                    }
+
+                    CheckBox {
+                        id: showSearchButtonBackgroundCheck
+                        text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show background tile (colored square)")
+                        leftPadding: 32
+                        enabled: showSearchButtonCheck.checked && (displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3)
+                        opacity: enabled ? 1.0 : 0.5
+                    }
+
                     RowLayout {
                         Kirigami.FormData.label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Panel Height")
                         Layout.fillWidth: true
@@ -299,7 +318,7 @@ Item {
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: 12
-                                anchors.rightMargin: 6
+                                anchors.rightMargin: cfg_showSearchButton ? 6 : 12
                                 spacing: 8
                                 
                                 Text {
@@ -310,18 +329,18 @@ Item {
                                     horizontalAlignment: displayModeCombo.currentIndex === 1 ? Text.AlignHCenter : Text.AlignLeft
                                 }
                                                                 Rectangle {
-                                        Layout.preferredWidth: (displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3) ? 28 : 0
+                                        Layout.preferredWidth: ((displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3) && cfg_showSearchButton) ? 28 : 0
                                         Layout.preferredHeight: 28
                                         radius: panelRadiusCombo.currentIndex === 0 ? height / 2 : (panelRadiusCombo.currentIndex === 1 ? 8 : (panelRadiusCombo.currentIndex === 2 ? 4 : 0))
-                                        color: Kirigami.Theme.highlightColor
-                                        visible: displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3
+                                        color: cfg_showSearchButtonBackground ? Kirigami.Theme.highlightColor : "transparent"
+                                        visible: (displayModeCombo.currentIndex === 2 || displayModeCombo.currentIndex === 3) && cfg_showSearchButton
                                         
                                         Kirigami.Icon {
                                             anchors.centerIn: parent
                                             width: 16
                                             height: 16
                                             source: "search"
-                                            color: "#ffffff"
+                                            color: cfg_showSearchButtonBackground ? "#ffffff" : Kirigami.Theme.textColor
                                         }
                                     }                          }
                         }
