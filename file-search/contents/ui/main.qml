@@ -35,7 +35,7 @@ PlasmoidItem {
     readonly property real textContentWidth: isButtonMode ? 0 : (textMetrics.width + ((isWideMode || isExtraWideMode) ? (height + 30) : 20))
     readonly property real baseWidth: isButtonMode ? height : (isExtraWideMode ? (height * 6) : ((isWideMode) ? (height * 4) : 70))
     
-    Layout.preferredWidth: Math.max(baseWidth, textContentWidth)
+    Layout.preferredWidth: Math.max(baseWidth, textContentWidth, placeholderContentWidth)
     Layout.preferredHeight: Plasmoid.configuration.panelHeight > 0 ? Plasmoid.configuration.panelHeight : 38
     Layout.minimumWidth: 50
     Layout.minimumHeight: Plasmoid.configuration.panelHeight > 0 ? Plasmoid.configuration.panelHeight : 34
@@ -56,6 +56,15 @@ PlasmoidItem {
         font.pixelSize: root.responsiveFontSize
         text: root.truncatedText
     }
+    
+    TextMetrics {
+        id: placeholderMetrics
+        font.family: textMetrics.font.family
+        font.pixelSize: textMetrics.font.pixelSize
+        text: root.placeholderText
+    }
+    
+    readonly property real placeholderContentWidth: isButtonMode ? 0 : (placeholderMetrics.width + ((isWideMode || isExtraWideMode) ? (height + 30) : 20))
     
     // No background - transparent
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
