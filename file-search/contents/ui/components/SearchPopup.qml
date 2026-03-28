@@ -607,7 +607,9 @@ Item {
         
         property bool isVisible: popupRoot.expanded && popupRoot.searchText.length > 0 && !isCommandOnlyQuery(popupRoot.searchText)
         
-        anchors.topMargin: isVisible ? 4 : 0
+        // Sabitlenmiş öğeler ile alttaki içerik (filtreler, geçmiş veya sonuçlar) arasına boşluk ekleyelim.
+        // Buton modunda değilken kullanıcı 6px fazladan boşluk istedi (4+6=10).
+        anchors.topMargin: (isVisible || pinnedLoader.active) ? (isButtonMode ? 4 : 10) : 0
         height: isVisible ? 32 : 0
         opacity: isVisible ? 1 : 0
         clip: true

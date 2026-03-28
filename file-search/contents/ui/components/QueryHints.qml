@@ -24,22 +24,21 @@ Rectangle {
     // Visibility - show when there's a relevant hint
     visible: currentHint.show && searchText.length > 0
     
-    height: visible ? (hintContent.implicitHeight + 12) * 2 : 0
-    color: Qt.rgba(bgColor.r, bgColor.g, bgColor.b, 0.8)
-    radius: 6
-    border.width: 1
-    border.color: currentHint.isError 
-        ? Qt.rgba(1, 0.3, 0.3, 0.5) 
-        : Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.3)
-    
-    Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-    
-    // KRunner supported prefixes
+    // KRunner supported prefixes with detailed descriptions
     readonly property var knownPrefixes: [
+        { 
+            prefix: ":",
+            hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search Prefixes"),
+            desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show all available search filters"),
+            icon: "help-about",
+            category: "Help"
+        },
         { 
             prefix: "timeline:/", 
             hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Timeline View"), 
+            desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Browse files by date (Today, Yesterday, etc.)"),
             icon: "view-calendar",
+            category: "Files",
             options: [
                 { label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Calendar"), value: "timeline:/calendar/" },
                 { label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Today"), value: "timeline:/today" },
@@ -48,30 +47,26 @@ Rectangle {
                 { label: i18nd("plasma_applet_com.mcc45tr.filesearch", "This Month"), value: "timeline:/thismonth" }
             ]
         },
-        // Specific timeline shortcuts (still needed for direct hits)
-        { prefix: "timeline:/today", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Files modified today"), icon: "view-calendar-day" },
-        { prefix: "timeline:/yesterday", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Files modified yesterday"), icon: "view-calendar-day" },
-        { prefix: "timeline:/thisweek", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Files modified this week"), icon: "view-calendar-week" },
-        { prefix: "timeline:/thismonth", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Files modified this month"), icon: "view-calendar-month" },
+        { prefix: "file:/", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "File Path"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search via absolute file path"), icon: "folder", category: "Files", localeBase: "file" },
+        { prefix: "baloo:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "File Index"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search exclusively in Baloo file index"), icon: "baloo", category: "Files" },
+        { prefix: "documents:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Documents"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search only document files"), icon: "document-multiple", category: "Files" },
+        { prefix: "images:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Images"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search only image files"), icon: "image-jpeg", category: "Files" },
         
-        { prefix: "file:/", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "File Path Search"), icon: "folder", localeBase: "file" },
-        { prefix: "man:/", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Man Pages"), icon: "help-contents", localeBase: "man" },
-        { prefix: "gg:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search on Google"), icon: "google", localeBase: "google" },
-        { prefix: "dd:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search on DuckDuckGo"), icon: "internet-web-browser", localeBase: "ddg" },
-        { prefix: "wp:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search on Wikipedia"), icon: "wikipedia", localeBase: "wikipedia" },
-        { prefix: "kill ", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Terminate processes"), icon: "process-stop", localeBase: "kill" },
-        { prefix: "spell ", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Check spelling"), icon: "tools-check-spelling", localeBase: "spell" },
-        { prefix: "#", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Unicode Characters"), icon: "character-set", localeBase: "unicode" },
-        { prefix: "app:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Applications"), icon: "applications-all", localeBase: "app" },
-        { prefix: "shell:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Shell Commands"), icon: "utilities-terminal", localeBase: "shell" },
-        { prefix: "b:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Bookmarks"), icon: "bookmarks", localeBase: "bookmarks" },
-        { prefix: "power:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show power management options"), icon: "system-shutdown", localeBase: "power" },
-        { prefix: "services:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "System Services"), icon: "preferences-system", localeBase: "services" },
-        { prefix: "weather:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show current weather"), icon: "weather-clear", localeBase: "weather" },
-        { prefix: "date", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show calendar and date information"), icon: "alarm-clock", localeBase: "date" },
-        { prefix: "define:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Dictionary Definition"), icon: "accessories-dictionary", localeBase: "define" },
-        { prefix: "unit:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Convert units (requires KRunner)"), icon: "accessories-calculator", localeBase: "unit" },
-        { prefix: "help:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show this help screen"), icon: "help-about", localeBase: "help" }
+        { prefix: "app:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Applications"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search for installed applications"), icon: "applications-all", category: "System", localeBase: "app" },
+        { prefix: "services:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Services"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search system background services"), icon: "preferences-system", category: "System", localeBase: "services" },
+        { prefix: "shell:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Shell"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Execute shell commands directly"), icon: "utilities-terminal", category: "System", localeBase: "shell" },
+        
+        { prefix: "calc:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Calculator"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Perform mathematical calculations"), icon: "accessories-calculator", category: "Utility" },
+        { prefix: "unit:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Unit Converter"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Convert between weights, distances, etc."), icon: "measure", category: "Utility", localeBase: "unit" },
+        { prefix: "spell ", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Spelling"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Check word spelling"), icon: "tools-check-spelling", category: "Utility", localeBase: "spell" },
+        
+        { prefix: "gg:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Google"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search the web using Google"), icon: "google", category: "Web", localeBase: "google" },
+        { prefix: "dd:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "DuckDuckGo"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search the web using DuckDuckGo"), icon: "internet-web-browser", category: "Web", localeBase: "ddg" },
+        { prefix: "wp:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Wikipedia"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search Wikipedia articles"), icon: "wikipedia", category: "Web", localeBase: "wikipedia" },
+        { prefix: "b:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Bookmarks"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search browser bookmarks"), icon: "bookmarks", category: "Web", localeBase: "bookmarks" },
+        
+        { prefix: "man:/", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Man Pages"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Browse system manual pages"), icon: "help-contents", category: "Help", localeBase: "man" },
+        { prefix: "help:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Help"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show widget documentation"), icon: "help-about", category: "Help", localeBase: "help" }
     ]
     
     // Helper for date formatting
@@ -143,9 +138,20 @@ Rectangle {
     
     function detectHint(query) {
         if (!query || query.length === 0) {
-            return { show: false, text: "", icon: "", isError: false }
+            return { show: false, text: "", icon: "", isError: false, isPrefixMenu: false }
         }
         
+        // Full prefix menu trigger
+        if (query === ":") {
+            return {
+                show: true,
+                isPrefixMenu: true,
+                text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search Prefixes"),
+                icon: "help-about",
+                isError: false
+            }
+        }
+
         var lowerQuery = query.toLowerCase()
         
         // 1. Check for known prefixes (both English keys and Localized keys)
@@ -155,6 +161,9 @@ Rectangle {
         
         for (var i = 0; i < knownPrefixes.length; i++) {
              var p = knownPrefixes[i]
+             
+             // Skip the ':' menu trigger itself during normal prefix matching
+             if (p.prefix === ":") continue;
              
              // Check if disabled by config (weather)
              if (p.prefix === "weather:" && plasmoidConfig && !plasmoidConfig.weatherEnabled) {
@@ -309,12 +318,175 @@ Rectangle {
         return { show: false, text: "", icon: "", isError: false }
     }
     
-    // Content Layout
+    // Read-only helper for view mode
+    readonly property bool isTileView: plasmoidConfig ? (plasmoidConfig.viewMode === 1) : false
+
+    height: visible ? (currentHint.isPrefixMenu ? 320 : (hintContent.implicitHeight + 12) * 2) : 0
+    color: Qt.rgba(bgColor.r, bgColor.g, bgColor.b, 0.95)
+    radius: 12
+    border.width: 1
+    border.color: currentHint.isError 
+        ? Qt.rgba(1, 0.3, 0.3, 0.5) 
+        : Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.3)
+    
+    // Header for Menu
+    Rectangle {
+        id: menuHeader
+        width: parent.width
+        height: visible ? 32 : 0
+        visible: queryHints.currentHint.isPrefixMenu
+        color: "transparent"
+        
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 12
+            anchors.rightMargin: 12
+            spacing: 8
+            
+            Kirigami.Icon {
+                source: "help-about"
+                Layout.preferredWidth: 16
+                Layout.preferredHeight: 16
+                color: queryHints.textColor
+            }
+            
+            Text {
+                text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Available Search Prefixes")
+                color: queryHints.textColor
+                font.bold: true
+                font.pixelSize: 12
+            }
+            
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Qt.rgba(queryHints.textColor.r, queryHints.textColor.g, queryHints.textColor.b, 0.1)
+            }
+        }
+    }
+
+    Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+    
+    // Prefix Grid/List View
+    ScrollView {
+        id: prefixScrollView
+        anchors.top: menuHeader.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 8
+        visible: queryHints.currentHint.isPrefixMenu
+        clip: true
+        
+        GridView {
+            id: prefixGrid
+            anchors.fill: parent
+            model: queryHints.knownPrefixes.slice(1) // Skip the trigger itself
+            cellWidth: isTileView ? 110 : width
+            cellHeight: isTileView ? 80 : 50
+            
+            delegate: Item {
+                width: prefixGrid.cellWidth
+                height: prefixGrid.cellHeight
+                
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: 4
+                    radius: 8
+                    color: prefixMouse.containsMouse ? Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.15) : "transparent"
+                    border.width: prefixMouse.containsMouse ? 1 : 0
+                    border.color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.3)
+                    
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        spacing: 2
+                        visible: isTileView
+                        
+                        Kirigami.Icon {
+                            source: modelData.icon || "dialog-information"
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
+                            Layout.alignment: Qt.AlignHCenter
+                            color: queryHints.textColor
+                        }
+                        
+                        Text {
+                            text: modelData.prefix
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            color: queryHints.textColor
+                            font.bold: true
+                            font.pixelSize: 10
+                        }
+                        
+                        Text {
+                            text: modelData.hint
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            color: Qt.rgba(queryHints.textColor.r, queryHints.textColor.g, queryHints.textColor.b, 0.7)
+                            font.pixelSize: 8
+                            elide: Text.ElideRight
+                        }
+                    }
+                    
+                    // List Layout
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+                        visible: !isTileView
+                        
+                        Kirigami.Icon {
+                            source: modelData.icon || "dialog-information"
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
+                            color: queryHints.textColor
+                        }
+                        
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            
+                            Text {
+                                text: modelData.prefix + " — " + modelData.hint
+                                color: queryHints.textColor
+                                font.bold: true
+                                font.pixelSize: 11
+                            }
+                            
+                            Text {
+                                text: modelData.desc || ""
+                                color: Qt.rgba(queryHints.textColor.r, queryHints.textColor.g, queryHints.textColor.b, 0.6)
+                                font.pixelSize: 9
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                                visible: text.length > 0
+                            }
+                        }
+                    }
+                    
+                    MouseArea {
+                        id: prefixMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            queryHints.hintSelected(modelData.prefix)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Original Single Hint Content Layout
     RowLayout {
         id: hintContent
         anchors.fill: parent
         anchors.margins: 6
         spacing: 8
+        visible: !queryHints.currentHint.isPrefixMenu
         
         // Spacer Left
         Item { Layout.fillWidth: true; visible: !queryHints.currentHint.options }
@@ -345,7 +517,7 @@ Rectangle {
         // Spacer Right
         Item { Layout.fillWidth: true; visible: !queryHints.currentHint.options }
         
-        // Result Limit Controls
+        // Result Limit Controls (Sub-options for timeline etc)
         RowLayout {
             visible: !!queryHints.currentHint.options
             spacing: 6
@@ -355,7 +527,6 @@ Rectangle {
                 model: queryHints.currentHint.options || []
                 
                 Button {
-                    // Use displayLabel if available (for days), otherwise label
                     text: modelData.displayLabel || modelData.label
                     Layout.preferredHeight: 22
                     font.pixelSize: 11
