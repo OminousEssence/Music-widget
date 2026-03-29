@@ -20,6 +20,10 @@ msgstr "Aspetto"
 msgid "Categories"
 msgstr "Categorie"
 
+#: contents/config/config.qml:11 contents/ui/config/ConfigCategories.qml:10
+msgid "RSS Sources"
+msgstr "Fonti RSS"
+
 #: contents/config/config.qml:16 contents/ui/config/ConfigDebug.qml:9
 msgid "Debug"
 msgstr "Debug"
@@ -379,8 +383,8 @@ msgid "User Profile"
 msgstr "Profilo utente"
 
 #: contents/ui/config/ConfigDebug.qml:141
-msgid "Enable Preview"
-msgstr "Abilita anteprima"
+msgid "Enable RSS Feed"
+msgstr "Abilita feed RSS"
 
 #: contents/ui/config/ConfigDebug.qml:147
 msgid "History Count"
@@ -625,6 +629,11 @@ msgstr "File modificati questa settimana"
 #: contents/ui/components/QueryHints.qml:54
 msgid "Files modified this month"
 msgstr "File modificati questo mese"
+
+#: contents/ui/components/QueryHints.qml:56
+#: contents/ui/components/HelpView.qml:18
+msgid "Type to search"
+msgstr "Scrivi per cercare"
 
 #: contents/ui/components/QueryHints.qml:56
 #: contents/ui/components/HelpView.qml:18
@@ -1045,6 +1054,9 @@ msgstr "30 minuti"
 
 msgid "1 Hour"
 msgstr "1 ora"
+
+msgid "Add Source"
+msgstr "Aggiungi fonte"
 
 msgid "(If time since last update > interval)"
 msgstr "(Se tempo dall'ultimo > intervallo)"

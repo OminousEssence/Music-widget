@@ -17,6 +17,10 @@ msgid "Appearance"
 msgstr "Apariencia"
 
 #: contents/config/config.qml:11 contents/ui/config/ConfigCategories.qml:10
+msgid "RSS Sources"
+msgstr "Fuentes RSS"
+
+#: contents/config/config.qml:11 contents/ui/config/ConfigCategories.qml:10
 msgid "Categories"
 msgstr "Categorías"
 
@@ -379,6 +383,10 @@ msgid "User Profile"
 msgstr "Perfil de usuario"
 
 #: contents/ui/config/ConfigDebug.qml:141
+msgid "Enable RSS Feed"
+msgstr "Activar fuente RSS"
+
+#: contents/ui/config/ConfigDebug.qml:141
 msgid "Enable Preview"
 msgstr "Habilitar vista previa"
 
@@ -626,6 +634,11 @@ msgstr "Archivos modificados este mes"
 
 #: contents/ui/components/QueryHints.qml:56
 #: contents/ui/components/HelpView.qml:18
+msgid "Type to search"
+msgstr "Escriba para buscar"
+
+#: contents/ui/components/QueryHints.qml:56
+#: contents/ui/components/HelpView.qml:18
 msgid "File Path Search"
 msgstr "Búsqueda por ruta"
 
@@ -802,7 +815,7 @@ msgstr "Búsquedas recientes"
 #: contents/ui/components/HistoryListView.qml:54
 #: contents/ui/components/HistoryTileView.qml:263
 msgid "Clear History"
-msgstr "Limpiar historial"
+msgstr "Borrar historial"
 
 #: contents/ui/components/ResultsListView.qml:330
 msgid "No results found"
@@ -1043,6 +1056,9 @@ msgstr "30 minutos"
 
 msgid "1 Hour"
 msgstr "1 hora"
+
+msgid "Add Source"
+msgstr "Añadir fuente"
 
 msgid "(If time since last update > interval)"
 msgstr "(Si el tiempo desde el último > intervalo)"

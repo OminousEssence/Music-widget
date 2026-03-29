@@ -152,60 +152,160 @@ Item {
         ]});
 
         if (lang === "tr") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Turkey TV"), items: [
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Türkiye News"), items: [
+                { name: "Anadolu Ajansı", url: "https://www.aa.com.tr/tr/rss" },
+                { name: "Hürriyet", url: "https://www.hurriyet.com.tr/rss/anasayfa" },
+                { name: "Cumhuriyet", url: "https://www.cumhuriyet.com.tr/rss" },
+                { name: "Webtekno", url: "https://www.webtekno.com/rss.xml" },
+                { name: "TeknoSeyir", url: "https://teknoseyir.com/feed" },
+                { name: "Sözcü", url: "https://www.sozcu.com.tr/feeds-haberler" },
+                { name: "TRT Haber", url: "https://www.trthaber.com/sondakika.rss" },
                 { name: "NTV", url: "https://www.ntv.com.tr/son-dakika.rss" },
                 { name: "Habertürk", url: "https://www.haberturk.com.tr/rss" },
                 { name: "CNN Türk", url: "https://www.cnnturk.com/feed/rss/all/news" },
-                { name: "TeknoSeyir", url: "https://teknoseyir.com/feed" }
+                { name: "Beyaz Gazete", url: "https://beyazgazete.com/rss/guncel.xml" }
             ]});
-        } else if (lang === "it") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Italy News"), items: [
-                { name: "La Repubblica", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml" },
-                { name: "Corriere della Sera", url: "http://xml2.corriereobjects.it/rss/homepage.xml" },
-                { name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml" },
-                { name: "Il Sole 24 Ore", url: "https://www.ilsole24ore.com/rss/italia.xml" }
+        } else if (lang === "az") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Azerbaijan News"), items: [
+                { name: "AZERTAC", url: "https://azertag.az/rss" },
+                { name: "APA", url: "https://apa.az/rss" },
+                { name: "Trend News", url: "https://az.trend.az/feeds/index.rss" },
+                { name: "Report.az", url: "https://report.az/rss/" },
+                { name: "Tech.az", url: "https://tech.az/feed/" }
+            ]});
+        } else if (lang === "bn") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Bangladesh News"), items: [
+                { name: "Prothom Alo", url: "https://www.prothomalo.com/feed" },
+                { name: "The Daily Star", url: "https://www.thedailystar.net/rss.xml" },
+                { name: "Ittefaq", url: "https://www.ittefaq.com.bd/rss.xml" },
+                { name: "Dhaka Tribune Tech", url: "https://www.dhakatribune.com/feed/articles/technology" }
+            ]});
+        } else if (lang === "cs") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Czech Republic"), items: [
+                { name: "iDNES.cz", url: "https://servis.idnes.cz/rss.aspx?c=zpravodaj" },
+                { name: "Novinky.cz", url: "https://www.novinky.cz/rss" },
+                { name: "Aktuálně.cz", url: "https://vyhledavani.aktualne.cz/zpravy/rss/" },
+                { name: "Živě.cz", url: "https://www.zive.cz/rss/sc-47/" }
+            ]});
+        } else if (lang === "de") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Germany News"), items: [
+                { name: "Spiegel Online", url: "https://www.spiegel.de/schlagzeilen/index.rss" },
+                { name: "Die Zeit", url: "https://newsfeed.zeit.de/index" },
+                { name: "FAZ", url: "https://www.faz.net/rss/aktuell/" },
+                { name: "Heise Online", url: "https://www.heise.de/rss/heise-atom.xml" }
+            ]});
+        } else if (lang === "el") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Greece News"), items: [
+                { name: "Kathimerini", url: "https://www.kathimerini.gr/rss" },
+                { name: "To Vima", url: "https://www.tovima.gr/feed/" },
+                { name: "Naftemporiki", url: "https://www.naftemporiki.gr/rss/" },
+                { name: "ProtoThema", url: "https://www.protothema.gr/rss" },
+                { name: "News247", url: "https://www.news247.gr/rss/" },
+                { name: "Techblog.gr", url: "https://techblog.gr/feed/" }
+            ]});
+        } else if (lang === "es") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Spain & Mexico"), items: [
+                { name: "El País", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada" },
+                { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml" },
+                { name: "ABC.es", url: "https://www.abc.es/rss/2.0/portada/" },
+                { name: "RTVE", url: "https://www.rtve.es/api/noticias/rss" },
+                { name: "Xataka", url: "http://feeds.weblogssl.com/xataka2" }
+            ]});
+        } else if (lang === "fa") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Iran News"), items: [
+                { name: "Fars News", url: "https://www.farsnews.ir/rss" },
+                { name: "ISNA", url: "https://www.isna.ir/rss" },
+                { name: "Hamshahri", url: "https://www.hamshahrionline.ir/rss" },
+                { name: "Zoomit", url: "https://zoomit.ir/feed/" }
             ]});
         } else if (lang === "fr") {
             presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "France News"), items: [
                 { name: "Le Monde", url: "https://www.lemonde.fr/rss/une.xml" },
                 { name: "Le Figaro", url: "https://www.lefigaro.fr/rss/figaro_actualites.xml" },
+                { name: "Libération", url: "https://www.liberation.fr/arc/outboundfeeds/rss-all/collection/accueil-une/?outputType=xml" },
                 { name: "France 24", url: "https://www.france24.com/fr/rss" },
-                { name: "Libération", url: "https://www.liberation.fr/arc/outboundfeeds/rss-all/collection/accueil-une/?outputType=xml" }
+                { name: "Journal du Geek", url: "https://www.journaldugeek.com/feed/" }
             ]});
-        } else if (lang === "es") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Spain News"), items: [
-                { name: "El País", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada" },
-                { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml" },
-                { name: "RTVE", url: "https://www.rtve.es/api/noticias/rss" },
-                { name: "ABC", url: "https://www.abc.es/rss/feeds/abc_espana.xml" }
+        } else if (lang === "hi") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "India News (Hindi)"), items: [
+                { name: "Dainik Jagran", url: "https://www.jagran.com/rss/news/latest-news-rss.xml" },
+                { name: "Amar Ujala", url: "https://www.amarujala.com/rss/india-news.xml" },
+                { name: "Navbharat Times", url: "https://navbharattimes.indiatimes.com/rssfeeds/2292.cms" },
+                { name: "Gadgets 360", url: "https://hindi.gadgets360.com/rss/feeds" }
+            ]});
+        } else if (lang === "hy") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Armenia News"), items: [
+                { name: "Armenpress", url: "https://armenpress.am/en/rss" },
+                { name: "PanARMENIAN", url: "https://www.panarmenian.net/rss/arm/" },
+                { name: "CivilNet", url: "https://www.civilnet.am/feed/" },
+                { name: "Itel.am", url: "https://itel.am/am/feed" }
+            ]});
+        } else if (lang === "id") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Indonesia News"), items: [
+                { name: "Detikcom", url: "https://rss.detik.com/" },
+                { name: "Kompas.com", url: "https://www.kompas.com/feed" },
+                { name: "Tempo", url: "https://www.tempo.co/rss/current" },
+                { name: "Tekno Kompas", url: "https://tekno.kompas.com/feed" }
+            ]});
+        } else if (lang === "it") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Italy News"), items: [
+                { name: "Corriere della Sera", url: "http://xml2.corriereobjects.it/rss/homepage.xml" },
+                { name: "La Repubblica", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml" },
+                { name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml" },
+                { name: "Il Sole 24 Ore", url: "https://www.ilsole24ore.com/rss/italia.xml" },
+                { name: "HDblog.it", url: "https://www.hdblog.it/feed/" }
+            ]});
+        } else if (lang === "ja") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Japan News"), items: [
+                { name: "NHK News", url: "https://www3.nhk.or.jp/rss/news/shuyou.xml" },
+                { name: "Asahi Shimbun", url: "https://www.asahi.com/rss/asahi/newsheadlines.rdf" },
+                { name: "Nikkei", url: "https://www.nikkei.com/rss/index.rdf" },
+                { name: "ITmedia", url: "https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml" }
+            ]});
+        } else if (lang === "pt") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Brazil & Portugal"), items: [
+                { name: "G1 (Globo)", url: "https://g1.globo.com/dynamo/rss2.xml" },
+                { name: "Folha de S.Paulo", url: "https://feeds.folha.uol.com.br/em-cima-da-hora/rss091.xml" },
+                { name: "Público", url: "https://www.publico.pt/feed/all" },
+                { name: "TecMundo", url: "https://www.tecmundo.com.br/rss" }
             ]});
         } else if (lang === "ro") {
             presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Romania News"), items: [
-                { name: "Digi24", url: "https://www.digi24.ro/rss" },
                 { name: "HotNews", url: "https://www.hotnews.ro/rss" },
-                { name: "Adevărul", url: "https://adevarul.ro/rss/" },
-                { name: "Știrile ProTV", url: "https://stirileprotv.ro/rss" }
+                { name: "Digi24", url: "https://www.digi24.ro/rss" },
+                { name: "Adevarul", url: "https://adevarul.ro/rss/" },
+                { name: "Știrile ProTV", url: "https://stirileprotv.ro/rss" },
+                { name: "Start-up.ro", url: "https://www.start-up.ro/feed/" }
             ]});
-        } else if (lang === "el") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Greece News"), items: [
-                { name: "Kathimerini", url: "https://www.kathimerini.gr/rss" },
-                { name: "ProtoThema", url: "https://www.protothema.gr/rss" },
-                { name: "News247", url: "https://www.news247.gr/rss/" },
-                { name: "Naftemporiki", url: "https://www.naftemporiki.gr/rss/" }
+        } else if (lang === "ru") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Russia News"), items: [
+                { name: "RIA Novosti", url: "https://ria.ru/export/rss2/archive/index.xml" },
+                { name: "TASS", url: "http://tass.ru/rss/v2.xml" },
+                { name: "Kommersant", url: "https://www.kommersant.ru/RSS/main.xml" },
+                { name: "Habr", url: "https://habr.com/ru/rss/all/all/" }
             ]});
-        } else if (lang === "az") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Azerbaijan News"), items: [
-                { name: "AZERTAC", url: "https://azertag.az/rss" },
-                { name: "Trend News", url: "https://az.trend.az/feeds/index.rss" },
-                { name: "Report.az", url: "https://report.az/rss/" },
-                { name: "APA", url: "https://apa.az/rss" }
+        } else if (lang === "ur") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Pakistan News"), items: [
+                { name: "Dawn Urdu", url: "https://www.dawnnews.tv/rss" },
+                { name: "Jang", url: "https://jang.com.pk/rss/" },
+                { name: "Geo News", url: "https://urdu.geo.tv/rss/1" },
+                { name: "ProPakistani", url: "https://propakistani.pk/feed/" }
+            ]});
+        } else if (lang === "zh") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "China News"), items: [
+                { name: "Xinhua", url: "http://www.news.cn/rss/top.xml" },
+                { name: "Caixin", url: "https://www.caixin.com/rss/" },
+                { name: "People's Daily", url: "http://www.people.com.cn/rss/politics.xml" },
+                { name: "36Kr", url: "https://36kr.com/feed" }
             ]});
         } else if (lang === "en") {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "UK & World News"), items: [
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "USA & UK News"), items: [
                 { name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml" },
+                { name: "NY Times", url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" },
                 { name: "The Guardian", url: "https://www.theguardian.com/uk/rss" },
+                { name: "CNNTürk", url: "http://rss.cnn.com/rss/edition.rss" },
                 { name: "Reuters", url: "https://www.reuters.com/arc/outboundfeeds/rss/?outputType=xml" },
-                { name: "CNN", url: "http://rss.cnn.com/rss/edition.rss" }
+                { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" }
             ]});
         } else {
             presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "World News"), items: [
@@ -232,7 +332,7 @@ Item {
                 return
             }
         }
-        if (rssSources.length >= 5) return
+        if (rssSources.length >= 30) return
         rssSources.push({ 
             url: item.url, 
             name: item.name, 
@@ -254,7 +354,7 @@ Item {
     }
     
     function addSource() {
-        if (rssSources.length >= 5) return
+        if (rssSources.length >= 30) return
         rssSources.push({ 
             url: "", 
             name: i18nd("plasma_applet_com.mcc45tr.filesearch", "New Source"), 

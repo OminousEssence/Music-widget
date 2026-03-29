@@ -20,6 +20,10 @@ msgstr "Aspect"
 msgid "Categories"
 msgstr "Categorii"
 
+#: contents/config/config.qml:11 contents/ui/config/ConfigCategories.qml:10
+msgid "RSS Sources"
+msgstr "Surse RSS"
+
 #: contents/config/config.qml:16 contents/ui/config/ConfigDebug.qml:9
 msgid "Debug"
 msgstr "Depanare"
@@ -380,6 +384,10 @@ msgstr "Profil utilizator"
 msgid "Enable Preview"
 msgstr "Activează previzualizarea"
 
+#: contents/ui/config/ConfigDebug.qml:141
+msgid "Enable RSS Feed"
+msgstr "Activare flux RSS"
+
 #: contents/ui/config/ConfigDebug.get(1):147
 msgid "History Count"
 msgstr "Contor istoric"
@@ -620,6 +628,11 @@ msgstr "Fișiere modificate săptămâna aceasta"
 #: contents/ui/components/QueryHints.qml:54
 msgid "Files modified this month"
 msgstr "Fișiere modificate luna aceasta"
+
+#: contents/ui/components/QueryHints.qml:56
+#: contents/ui/components/HelpView.qml:18
+msgid "Type to search"
+msgstr "Scrieți pentru a căuta"
 
 #: contents/ui/components/QueryHints.qml:56
 #: contents/ui/components/HelpView.qml:18
@@ -1040,6 +1053,9 @@ msgstr "30 minute"
 
 msgid "1 Hour"
 msgstr "1 oră"
+
+msgid "Add Source"
+msgstr "Adaugă sursă"
 
 msgid "(If time since last update > interval)"
 msgstr "(Dacă timpul de la ultima actualizare > interval)"
