@@ -341,11 +341,13 @@ FocusScope {
         clip: true
         ScrollBar.vertical: scrollBarLoader.item
         
-        ListView {
+        Column {
             id: tileView
-            model: historyTile.categorizedHistory
+            width: parent.width
             spacing: 8
-            interactive: false
+            
+            Repeater {
+                model: historyTile.categorizedHistory
             
             delegate: Column {
                 id: histCategoryDelegate
@@ -399,11 +401,22 @@ FocusScope {
                     }
                 }
                 
-                // Tile Flow
-                Flow {
+                // Tile Flow (Animated collapse/expand - matches PinnedSection style)
+                Item {
                     width: parent.width
-                    spacing: 8
-                    visible: !histCategoryDelegate.isCollapsed
+                    height: histCategoryDelegate.isCollapsed ? 0 : histCategoryFlow.implicitHeight
+                    clip: true
+                    
+                    Behavior on height {
+                        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+                    }
+                    
+                    Flow {
+                        id: histCategoryFlow
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: 8
                     
                     Repeater {
                         model: modelData.items
@@ -560,7 +573,9 @@ FocusScope {
                             }
                         }
                     }
+                    }
                 }
+            }
             }
         }
     }

@@ -374,9 +374,10 @@ Item {
         }
     }
 
+    readonly property string rssCacheBase: StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/.cache/com.mcc45tr.filesearch/rss"
+
     function getSourceFilePath(url) {
-        var base = StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/plasma-file-search-rss"
-        return RSSManager.getSourceFilePath(url, base)
+        return RSSManager.getSourceFilePath(url, rssCacheBase)
     }
 
     function loadSourceEntries(url, callback) {
@@ -438,8 +439,7 @@ Item {
             var path = getSourceFilePath(source.url)
             var json = JSON.stringify(entries)
             var base64Json = Qt.btoa(unescape(encodeURIComponent(json)))
-            var baseDir = StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/plasma-file-search-rss"
-            executable.connectSource("mkdir -p '" + baseDir + "' && (echo '" + base64Json + "' > '" + path + "')")
+            executable.connectSource("mkdir -p '" + rssCacheBase + "' && (echo '" + base64Json + "' > '" + path + "')")
             
             updateCombinedCache()
         })

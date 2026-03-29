@@ -330,12 +330,13 @@ FocusScope {
         clip: true
         ScrollBar.vertical: scrollBarLoader.item
         
-        ListView {
+        Column {
             id: tileCategoryList
             width: parent.width
-            model: resultsTileRoot.categorizedData
             spacing: 16
-            interactive: false
+            
+            Repeater {
+                model: resultsTileRoot.categorizedData
             
             delegate: Column {
                 id: categoryDelegate
@@ -391,11 +392,22 @@ FocusScope {
                     }
                 }
                 
-                // Grid Flow (Hidden when collapsed)
-                Flow {
+                // Grid Flow (Animated collapse/expand - matches PinnedSection style)
+                Item {
                     width: parent.width
-                    spacing: 8
-                    visible: !categoryDelegate.isCollapsed
+                    height: categoryDelegate.isCollapsed ? 0 : categoryFlow.implicitHeight
+                    clip: true
+                    
+                    Behavior on height {
+                        NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+                    }
+                    
+                    Flow {
+                        id: categoryFlow
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: 8
                     
                     Repeater {
                         model: modelData.items
@@ -770,10 +782,13 @@ FocusScope {
                             }
                         }
                     }
+                    }
                 }
+            }
             }
         }
     }
+    
     
     // Empty state
     Text {

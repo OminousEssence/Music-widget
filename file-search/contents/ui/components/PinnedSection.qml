@@ -57,45 +57,40 @@ Item {
         anchors.fill: parent
         spacing: 4
         
-        // Section header
-        Item {
+        // Section header - matches category header style
+        Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: headerRow.implicitHeight
+            Layout.preferredHeight: 28
+            color: headerMouse.containsMouse ? Qt.rgba(pinnedSectionRoot.accentColor.r, pinnedSectionRoot.accentColor.g, pinnedSectionRoot.accentColor.b, 0.1) : "transparent"
+            radius: 4
             
             RowLayout {
                 id: headerRow
                 anchors.fill: parent
+                anchors.leftMargin: 4
+                anchors.rightMargin: 4
                 spacing: 8
                 
+                // Collapse indicator
                 Kirigami.Icon {
                     source: pinnedSectionRoot.isExpanded ? "arrow-down" : "arrow-right"
                     Layout.preferredWidth: 16
                     Layout.preferredHeight: 16
-                    color: pinnedSectionRoot.accentColor
-                    
-                    Behavior on rotation { NumberAnimation { duration: 200 } }
-                }
-                
-                Kirigami.Icon {
-                    source: "pin"
-                    Layout.preferredWidth: 16
-                    Layout.preferredHeight: 16
-                    color: pinnedSectionRoot.accentColor
+                    color: pinnedSectionRoot.textColor
+                    opacity: 0.6
                 }
                 
                 Text {
-                    text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Pinned Items")
-                    font.pixelSize: 12
+                    text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Pinned Items") + " (" + pinnedSectionRoot.pinnedItems.length + ")"
+                    font.pixelSize: 13
                     font.bold: true
                     color: Qt.rgba(pinnedSectionRoot.textColor.r, pinnedSectionRoot.textColor.g, pinnedSectionRoot.textColor.b, 0.7)
                 }
                 
-                Item { Layout.fillWidth: true }
-                
-                Text {
-                    text: pinnedSectionRoot.pinnedItems.length
-                    font.pixelSize: 10
-                    color: Qt.rgba(pinnedSectionRoot.textColor.r, pinnedSectionRoot.textColor.g, pinnedSectionRoot.textColor.b, 0.5)
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Qt.rgba(pinnedSectionRoot.textColor.r, pinnedSectionRoot.textColor.g, pinnedSectionRoot.textColor.b, 0.2)
                 }
             }
             

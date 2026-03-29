@@ -158,8 +158,57 @@ Item {
                 { name: "CNN Türk", url: "https://www.cnnturk.com/feed/rss/all/news" },
                 { name: "TeknoSeyir", url: "https://teknoseyir.com/feed" }
             ]});
+        } else if (lang === "it") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Italy News"), items: [
+                { name: "La Repubblica", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml" },
+                { name: "Corriere della Sera", url: "http://xml2.corriereobjects.it/rss/homepage.xml" },
+                { name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml" },
+                { name: "Il Sole 24 Ore", url: "https://www.ilsole24ore.com/rss/italia.xml" }
+            ]});
+        } else if (lang === "fr") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "France News"), items: [
+                { name: "Le Monde", url: "https://www.lemonde.fr/rss/une.xml" },
+                { name: "Le Figaro", url: "https://www.lefigaro.fr/rss/figaro_actualites.xml" },
+                { name: "France 24", url: "https://www.france24.com/fr/rss" },
+                { name: "Libération", url: "https://www.liberation.fr/arc/outboundfeeds/rss-all/collection/accueil-une/?outputType=xml" }
+            ]});
+        } else if (lang === "es") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Spain News"), items: [
+                { name: "El País", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada" },
+                { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml" },
+                { name: "RTVE", url: "https://www.rtve.es/api/noticias/rss" },
+                { name: "ABC", url: "https://www.abc.es/rss/feeds/abc_espana.xml" }
+            ]});
+        } else if (lang === "ro") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Romania News"), items: [
+                { name: "Digi24", url: "https://www.digi24.ro/rss" },
+                { name: "HotNews", url: "https://www.hotnews.ro/rss" },
+                { name: "Adevărul", url: "https://adevarul.ro/rss/" },
+                { name: "Știrile ProTV", url: "https://stirileprotv.ro/rss" }
+            ]});
+        } else if (lang === "el") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Greece News"), items: [
+                { name: "Kathimerini", url: "https://www.kathimerini.gr/rss" },
+                { name: "ProtoThema", url: "https://www.protothema.gr/rss" },
+                { name: "News247", url: "https://www.news247.gr/rss/" },
+                { name: "Naftemporiki", url: "https://www.naftemporiki.gr/rss/" }
+            ]});
+        } else if (lang === "az") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "Azerbaijan News"), items: [
+                { name: "AZERTAC", url: "https://azertag.az/rss" },
+                { name: "Trend News", url: "https://az.trend.az/feeds/index.rss" },
+                { name: "Report.az", url: "https://report.az/rss/" },
+                { name: "APA", url: "https://apa.az/rss" }
+            ]});
+        } else if (lang === "en") {
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "UK & World News"), items: [
+                { name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml" },
+                { name: "The Guardian", url: "https://www.theguardian.com/uk/rss" },
+                { name: "Reuters", url: "https://www.reuters.com/arc/outboundfeeds/rss/?outputType=xml" },
+                { name: "CNN", url: "http://rss.cnn.com/rss/edition.rss" }
+            ]});
         } else {
-            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "World TV"), items: [
+            presets.push({ section: i18nd("plasma_applet_com.mcc45tr.filesearch", "World News"), items: [
                 { name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml" },
                 { name: "CNN", url: "http://rss.cnn.com/rss/edition.rss" },
                 { name: "Reuters", url: "https://www.reuters.com/arc/outboundfeeds/rss/?outputType=xml" },
@@ -291,7 +340,7 @@ Item {
                                 
                                 Qt.callLater(function() {
                                     addLog(index, "Saving to Cache...", "testing")
-                                    var base = StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/plasma-file-search-rss"
+                                    var base = StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/.cache/com.mcc45tr.filesearch/rss"
                                     var path = RSSManager.getSourceFilePath(url, base)
                                     var json = JSON.stringify(entries)
                                     var base64Json = Qt.btoa(unescape(encodeURIComponent(json)))
@@ -460,7 +509,7 @@ Item {
                 }
 
                 QQC2.SpinBox {
-                    Kirigami.FormData.label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Maksimum Haber (Kaynak Başlı):")
+                    Kirigami.FormData.label: i18nd("plasma_applet_com.mcc45tr.filesearch", "Maksimum Haber (Kaynak Başına):")
                     from: 5
                     to: 50
                     value: cfg_rssMaxEntries
@@ -480,7 +529,7 @@ Item {
                                     Repeater {
                                         model: [10, 15, 30, 45, 60, 120, 180, 240, 300, 360, 480, 600, 720, 1440]
                                         QQC2.MenuItem {
-                                            text: modelData >= 60 ? i18n("%1 hours", modelData/60) : i18n("%1 mins", modelData)
+                                            text: modelData >= 60 ? i18nd("plasma_applet_com.mcc45tr.filesearch", "%1 hours", modelData/60) : i18nd("plasma_applet_com.mcc45tr.filesearch", "%1 mins", modelData)
                                             onTriggered: updateSource(index, "syncInterval", modelData)
                                         }
                                     }

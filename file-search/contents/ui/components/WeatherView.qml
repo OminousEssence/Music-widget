@@ -108,7 +108,7 @@ Item {
                     id: conditionLabel
                     // Use localization for condition text if possible, reference used tr("condition_" + ...)
                     // Here we will try to just show what API gives or a simple mapping if needed.
-                    text: currentWeather ? currentWeather.condition : "" 
+                    text: currentWeather ? i18nd("plasma_applet_com.mcc45tr.filesearch", currentWeather.condition) : "" 
                     color: Kirigami.Theme.textColor
                     font.family: "Roboto Condensed"
                     font.pixelSize: 22

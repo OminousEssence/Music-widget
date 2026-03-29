@@ -101,7 +101,7 @@ Item {
                 
                 property var recentIndices: []
                 property var recentSources: []
-                property string defaultText: compactRoot.isExtraWideMode ? i18nd("plasma_applet_com.mcc45tr.filesearch", "Arama yapmaya başla...") : (compactRoot.isWideMode ? i18nd("plasma_applet_com.mcc45tr.filesearch", "Search...") : i18nd("plasma_applet_com.mcc45tr.filesearch", "Search"))
+                property string defaultText: compactRoot.isExtraWideMode ? i18nd("plasma_applet_com.mcc45tr.filesearch", "Arama yapmaya başla...") : (compactRoot.isWideMode ? i18nd("plasma_applet_com.mcc45tr.filesearch", "Arama yap...") : i18nd("plasma_applet_com.mcc45tr.filesearch", "Arama"))
                 
                 property var rssTitles: {
                     var list = []
