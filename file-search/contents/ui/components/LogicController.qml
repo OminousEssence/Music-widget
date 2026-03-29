@@ -1,12 +1,15 @@
 import QtQuick
+import QtCore
 import org.kde.plasma.plasmoid
 import org.kde.plasma.plasma5support as Plasma5Support
+import org.kde.plasma.core as PlasmaCore
 import "../js/HistoryManager.js" as HistoryManager
 import "../js/PinnedManager.js" as PinnedManager
 import "../js/CategoryManager.js" as CategoryManager
 import "../js/TelemetryManager.js" as TelemetryManager
 import "../js/ConfigManager.js" as ConfigManager
 import "../js/utils.js" as Utils
+import "../js/RSSManager.js" as RSSManager
 
 Item {
     id: logicRoot
@@ -340,11 +343,190 @@ Item {
          manCheckSource.connectedSources = ["command -v man"]
     }
 
+    // ===== RSS MANAGEMENT =====
+    property var rssSources: []
+    property var rssCache: []
+    readonly property bool rssEnabled: plasmoidConfig.rssEnabled || false
+    
+    function loadRSS() {
+        try {
+            rssSources = JSON.parse(plasmoidConfig.rssSources || "[]")
+            rssCache = JSON.parse(plasmoidConfig.rssCache || "[]")
+        } catch (e) {
+            rssSources = []
+            rssCache = []
+        }
+    }
+    
+    Plasma5Support.DataSource {
+        id: executable
+        engine: "executable"
+        connectedSources: []
+    }
+
+    function getSourceFilePath(url) {
+        var base = StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/plasma-file-search-rss"
+        return RSSManager.getSourceFilePath(url, base)
+    }
+
+    function loadSourceEntries(url, callback) {
+        if (!url) {
+            callback([])
+            return
+        }
+        var path = "file://" + getSourceFilePath(url)
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200 || xhr.status === 0) {
+                    try {
+                        var data = JSON.parse(xhr.responseText)
+                        callback(data || [])
+                    } catch(e) { callback([]) }
+                } else {
+                    callback([])
+                }
+            }
+        }
+        xhr.open("GET", path)
+        xhr.send()
+    }
+
+    function checkAndSyncRSS() {
+        if (!rssEnabled || rssSources.length === 0) return
+        
+        var now = new Date().getTime()
+        for (var i = 0; i < rssSources.length; i++) {
+            var source = rssSources[i]
+            var interval = source.syncInterval || plasmoidConfig.rssSyncInterval || 60
+            var intervalMs = interval * 60 * 1000
+            var lastSync = source.lastSync || 0
+            
+            if (now - lastSync > intervalMs) {
+                syncSource(i)
+            }
+        }
+    }
+
+    function syncSource(index) {
+        var source = rssSources[index]
+        if (!source.url) return
+        
+        fetchRSS(source, function(entries) {
+            if (entries.length === 0) {
+                // Keep old data if sync failed
+                updateCombinedCache()
+                return
+            }
+            
+            rssSources[index].lastSync = new Date().getTime()
+            plasmoidConfig.rssSources = JSON.stringify(rssSources)
+            
+            // Save to file
+            var path = getSourceFilePath(source.url)
+            var json = JSON.stringify(entries)
+            var baseDir = StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/plasma-file-search-rss"
+            executable.exec("mkdir -p '" + baseDir + "' && cat << 'EOF' > '" + path + "'\n" + json + "\nEOF")
+            
+            updateCombinedCache()
+        })
+    }
+
+    function syncAllRSS() {
+        if (!rssEnabled || rssSources.length === 0) return
+        for (var i = 0; i < rssSources.length; i++) {
+            syncSource(i)
+        }
+    }
+
+    function updateCombinedCache() {
+        var combined = []
+        var completedCount = 0
+        
+        if (rssSources.length === 0) {
+            rssCache = []
+            return
+        }
+
+        for (var i = 0; i < rssSources.length; i++) {
+            loadSourceEntries(rssSources[i].url, function(entries) {
+                combined = combined.concat(entries)
+                completedCount++
+                if (completedCount === rssSources.length) {
+                    combined.sort(function(a, b) { return 0 })
+                    rssCache = combined
+                }
+            })
+        }
+    }
+    
+    function hashStr(s) {
+        var hash = 0
+        for (var i = 0; i < s.length; i++) {
+            hash = ((hash << 5) - hash) + s.charCodeAt(i)
+            hash |= 0
+        }
+        return Math.abs(hash)
+    }
+
+    function fetchRSS(source, callback) {
+        if (!source.url) {
+            callback([])
+            return
+        }
+        
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var entries = parseRSS(xhr.responseText, source.name)
+                    var max = source.maxEntries || plasmoidConfig.rssMaxEntries || 10
+                    callback(entries.slice(0, max))
+                } else {
+                    callback([])
+                }
+            }
+        }
+        xhr.open("GET", source.url)
+        xhr.send()
+    }
+
+    function parseRSS(xml, sourceName) {
+        return RSSManager.parseRSS(xml, sourceName)
+    }
+
+    Timer {
+        id: rssSyncTimer
+        interval: 60000 // Check every minute
+        running: rssEnabled
+        repeat: true
+        onTriggered: checkAndSyncRSS()
+    }
+    
+    // Watch for config changes (source addition/removal)
+    Connections {
+        target: plasmoidConfig
+        function onRssSourcesChanged() {
+            loadRSS()
+            if (rssEnabled) syncAllRSS()
+        }
+        function onRssEnabledChanged() {
+            if (rssEnabled) syncAllRSS()
+        }
+    }
+
     Component.onCompleted: {
         console.log("FileSearch: LogicController initialized")
         loadHistory()
         loadPinned()
         loadCategorySettings()
+        loadRSS()
+        updateCombinedCache()
         checkManAvailability()
+        
+        // Initial sync check
+        Qt.callLater(() => {
+            checkAndSyncRSS()
+        })
     }
 }

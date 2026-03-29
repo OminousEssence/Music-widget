@@ -64,6 +64,7 @@ Rectangle {
         { prefix: "dd:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "DuckDuckGo"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search the web using DuckDuckGo"), icon: "internet-web-browser", category: "Web", localeBase: "ddg" },
         { prefix: "wp:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Wikipedia"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search Wikipedia articles"), icon: "wikipedia", category: "Web", localeBase: "wikipedia" },
         { prefix: "b:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Bookmarks"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search browser bookmarks"), icon: "bookmarks", category: "Web", localeBase: "bookmarks" },
+        { prefix: "rss:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "RSS Feeds"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Search exclusively in RSS news feeds"), icon: "news-subscribe", category: "Web", localeBase: "rss" },
         
         { prefix: "man:/", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Man Pages"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Browse system manual pages"), icon: "help-contents", category: "Help", localeBase: "man" },
         { prefix: "help:", hint: i18nd("plasma_applet_com.mcc45tr.filesearch", "Help"), desc: i18nd("plasma_applet_com.mcc45tr.filesearch", "Show widget documentation"), icon: "help-about", category: "Help", localeBase: "help" }

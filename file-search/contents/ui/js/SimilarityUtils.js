@@ -125,6 +125,17 @@ function sortByPriorityAndSimilarity(results, queryText, categorySettings, getPr
 
             var scoreA = similarityScore(queryText, displayA);
             var scoreB = similarityScore(queryText, displayB);
+            
+            // For RSS feeds, also check the indexed content (description + partial content)
+            if (a.category === "RSS" && a.indexedContent) {
+                var contentScoreA = similarityScore(queryText, a.indexedContent);
+                // Weight content matches slightly less than title matches (0.8x)
+                scoreA = Math.max(scoreA, contentScoreA * 0.8);
+            }
+            if (b.category === "RSS" && b.indexedContent) {
+                var contentScoreB = similarityScore(queryText, b.indexedContent);
+                scoreB = Math.max(scoreB, contentScoreB * 0.8);
+            }
 
             return scoreB - scoreA; // Higher score first
         }

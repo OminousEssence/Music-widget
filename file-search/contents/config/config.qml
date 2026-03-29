@@ -13,6 +13,12 @@ ConfigModel {
         source: "config/ConfigCategories.qml"
     }
 
+    ConfigCategory {
+        name: i18n("RSS")
+        icon: "news-subscribe"
+        source: "config/ConfigRSS.qml"
+    }
+
 
     ConfigCategory {
         name: i18n("Debug")

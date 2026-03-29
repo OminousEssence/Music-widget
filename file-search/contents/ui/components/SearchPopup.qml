@@ -79,7 +79,10 @@ Item {
     
     // Read-only helpers
     readonly property bool isButtonMode: displayMode === 0
-    readonly property bool isTileView: viewMode === 1
+    readonly property bool isTileView: {
+        if (searchText.toLowerCase().startsWith("rss:")) return false;
+        return plasmoidConfig ? (plasmoidConfig.viewMode === 1) : true
+    }
     
     // Active filter from chips
     property string activeFilter: "Tümü"
@@ -175,8 +178,19 @@ Item {
     }
 
     function handleResultClick(index, display, decoration, category, matchId, filePath) {
-        logic.addToHistory(display, decoration, category, matchId, filePath, null, popupRoot.searchText);
+        // Record to history
+        logic.addToHistory(display, decoration, category, matchId, filePath, (index === -1 ? "rss" : null), popupRoot.searchText);
         
+        // Handle non-milou results (like RSS)
+        if (index === -1) {
+            if (filePath && filePath.toString().length > 0) {
+                Qt.openUrlExternally(filePath);
+            }
+            requestSearchTextUpdate("");
+            requestExpandChange(false);
+            return;
+        }
+
         var isApp = (category === "Uygulamalar" || category === "Applications") || (filePath && filePath.toString().indexOf(".desktop") > 0);
         var idx = resultsModel.index(index, 0);
         
@@ -186,9 +200,11 @@ Item {
         } 
         else if (isApp) {
              resultsModel.run(idx);
-        } else if (filePath && filePath.length > 0) {
+        } else if (filePath && filePath.length > 0 && filePath.toString().indexOf("http") !== 0) {
+             // For files, open externally
              Qt.openUrlExternally(filePath);
         } else {
+             // For bookmarks or others, use Milou run
              resultsModel.run(idx);
         }
         

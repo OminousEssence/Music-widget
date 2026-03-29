@@ -28,7 +28,6 @@ ScrollView {
     signal itemRightClicked(var item, real x, real y)
     
     // Localization
-    // trFunc property removed
     property string searchText: ""
     
     // Pin support
@@ -45,12 +44,13 @@ ScrollView {
         id: resultsList
         width: parent.width
         model: resultsListRoot.flatSortedData
-        spacing: 2
+        spacing: 4
         currentIndex: resultsListRoot.currentIndex
         
         highlight: Rectangle {
-            color: Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.2)
-            radius: 4
+            color: Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.15)
+            radius: 8
+            visible: resultsList.currentItem && !resultsList.currentItem.isRSS // Hide highlight for RSS cards
         }
         highlightFollowsCurrentItem: true
         
@@ -58,167 +58,150 @@ ScrollView {
         section.property: "category"
         section.delegate: Item {
             width: resultsList.width
-            height: 28
+            height: 32
             
             Text {
                 anchors.left: parent.left
+                anchors.leftMargin: 4
                 anchors.verticalCenter: parent.verticalCenter
-                text: section
+                text: section === "RSS" ? i18nd("plasma_applet_com.mcc45tr.filesearch", "Haberler") : section
                 font.pixelSize: 11
                 font.bold: true
                 color: Qt.rgba(resultsListRoot.textColor.r, resultsListRoot.textColor.g, resultsListRoot.textColor.b, 0.6)
             }
         }
         
-        add: Transition {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150 }
-            NumberAnimation { property: "scale"; from: 0.96; to: 1.0; duration: 150 }
-        }
-        
-        delegate: Rectangle {
-            id: resultItem
+        delegate: Item {
+            id: delegateRoot
             width: resultsList.width
-            height: Math.max(44, resultsListRoot.listIconSize + 18)
-            color: resultMouseArea.containsMouse ? Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.15) : "transparent"
-            radius: 4
+            property bool isRSS: modelData.category === "RSS"
+            property bool isExpanded: false
             
-            // Ensure visible initially
-            opacity: 1 
+            height: isRSS ? (isExpanded ? (descriptionLabel.implicitHeight + 110) : 72) : Math.max(44, resultsListRoot.listIconSize + 18)
             
-            // Sürükle ve Bırak Desteği
-            Drag.active: resultMouseArea.drag.active
-            Drag.dragType: Drag.Automatic
-            Drag.mimeData: {
-                "text/uri-list": modelData.url || "",
-                "text/plain": modelData.url || ""
-            }
-            // MimeData mapping
-            
-            RowLayout {
+            // Background Container
+            Rectangle {
                 anchors.fill: parent
-                anchors.leftMargin: 8
-                anchors.rightMargin: 8
-                spacing: 10
+                anchors.margins: isRSS ? 2 : 0
+                color: resultMouseArea.containsMouse ? Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.15) : 
+                       (isRSS ? Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.05) : "transparent")
+                radius: isRSS ? 10 : 4
+                border.width: (isRSS || resultsList.currentIndex === index) ? 1 : 0
+                border.color: (isRSS || resultsList.currentIndex === index) ? Qt.rgba(resultsListRoot.accentColor.r, resultsListRoot.accentColor.g, resultsListRoot.accentColor.b, 0.3) : "transparent"
                 
-                // Icon
-                // Icon Container
-                Item {
-                    Layout.preferredWidth: resultsListRoot.listIconSize
-                    Layout.preferredHeight: resultsListRoot.listIconSize
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: 8
                     
-                    // 1. Fallback / Base Icon (MIME type or App icon)
-                    Kirigami.Icon {
-                        anchors.fill: parent
-                        source: modelData.decoration || "application-x-executable"
-                        color: resultsListRoot.textColor
-                        visible: previewImage.status !== Image.Ready
-                    }
-                    
-                    // 2. Preview Image
-                    Image {
-                        id: previewImage
-                        anchors.fill: parent
-                        asynchronous: true
-                        fillMode: Image.PreserveAspectCrop
-                        sourceSize.width: resultsListRoot.listIconSize
-                        sourceSize.height: resultsListRoot.listIconSize
-                        cache: true
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 12
                         
-                        source: {
-                            if (resultsListRoot.listIconSize <= 22 || !resultsListRoot.previewEnabled) return "";
+                        // Icon Container
+                        Item {
+                            Layout.preferredWidth: isRSS ? 36 : resultsListRoot.listIconSize
+                            Layout.preferredHeight: isRSS ? 36 : resultsListRoot.listIconSize
                             
-                            var url = (modelData.url || "").toString();
-                            if (!url) return "";
+                            Kirigami.Icon {
+                                anchors.fill: parent
+                                source: modelData.decoration || (isRSS ? "news-subscribe" : "application-x-executable")
+                                color: resultsListRoot.textColor
+                            }
+                        }
+                        
+                        // Text Content
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
                             
-                            // Strip file:// prefix and decode special characters
-                            var showPreview = false;
-                            
-                            var imageExts = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff"]
-                            if (resultsListRoot.previewSettings.images && imageExts.indexOf(ext) >= 0) showPreview = true;
-                            
-                            var videoExts = ["mp4", "mkv", "avi", "webm", "mov", "flv", "wmv", "mpg", "mpeg"]
-                            if (!showPreview && resultsListRoot.previewSettings.videos && videoExts.indexOf(ext) >= 0) showPreview = true;
-                            
-                            var docExts = ["pdf", "odt", "docx", "pptx", "xlsx", "ods", "csv", "xls", "txt", "md"]
-                            if (!showPreview && resultsListRoot.previewSettings.documents && docExts.indexOf(ext) >= 0) showPreview = true;
-                            
-                            if (showPreview) {
-                                return "image://preview/" + path;
+                            Text {
+                                text: modelData.display || ""
+                                color: resultsListRoot.textColor
+                                font.pixelSize: isRSS ? 15 : 14
+                                font.bold: isRSS
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
                             }
                             
-                            return "";
+                            Text {
+                                text: {
+                                    if (isRSS) return modelData.subtext || "";
+                                    var path = (modelData.url || "").toString().replace("file://", "");
+                                    path = path.replace(/^\/home\/[^\/]+\//, "");
+                                    return path || modelData.subtext || "";
+                                }
+                                color: Qt.rgba(resultsListRoot.textColor.r, resultsListRoot.textColor.g, resultsListRoot.textColor.b, 0.6)
+                                font.pixelSize: 11
+                                elide: Text.ElideMiddle
+                                Layout.fillWidth: true
+                            }
                         }
-                    }
-                }
-                
-                // Result text with optional parent folder
-                Column {
-                    Layout.fillWidth: true
-                    spacing: 1
-                    
-                    Text {
-                        text: modelData.display || ""
-                        color: resultsListRoot.textColor
-                        font.pixelSize: 14
-                        elide: Text.ElideRight
-                        width: parent.width
-                    }
-                    
-                    // Parent folder for files or subtext for apps
-                    Text {
-                        text: {
-                            var cat = modelData.category || ""
-                            var isApp = (cat === "Uygulamalar" || cat === "Applications" || cat === "System Settings");
-                            if (isApp) return modelData.subtext || "";
 
-                            var path = (modelData.url && modelData.url.toString) ? modelData.url.toString() : "";
+                        // Right side icons
+                        RowLayout {
+                            spacing: 4
                             
-                            // Fallback to subtext if it looks like a path
-                            if (!path && modelData.subtext && modelData.subtext.toString().indexOf("/") === 0) {
-                                path = "file://" + modelData.subtext;
+                            // Pin Indicator/Button
+                            Kirigami.Icon {
+                                source: "pin"
+                                implicitWidth: 14
+                                implicitHeight: 14
+                                visible: resultsListRoot.isPinnedFunc(modelData.duplicateId || modelData.display)
+                                color: resultsListRoot.accentColor
                             }
                             
-                            if (path && path.length > 0) {
-                                path = path.replace("file://", "");
-                                // Remove /home/user/ prefix using regex
-                                path = path.replace(/^\/home\/[^\/]+\//, "");
-                                return path;
+                            // Expansion Indicator
+                            Kirigami.Icon {
+                                visible: isRSS
+                                source: delegateRoot.isExpanded ? "arrow-up" : "arrow-down"
+                                implicitWidth: 16
+                                implicitHeight: 16
+                                opacity: 0.5
+                                color: resultsListRoot.textColor
                             }
-                            return modelData.subtext || "";
                         }
-                        visible: text.length > 0
-                        color: Qt.rgba(resultsListRoot.textColor.r, resultsListRoot.textColor.g, resultsListRoot.textColor.b, 0.5)
-                        font.pixelSize: 10
-                        elide: Text.ElideMiddle
-                        width: parent.width
                     }
-                }
-                
-                // Pin button
-                Item {
-                    Layout.preferredWidth: 28
-                    Layout.preferredHeight: 28
-                    visible: resultMouseArea.containsMouse
                     
-                    PinButton {
-                        anchors.centerIn: parent
-                        isPinned: {
-                            var matchId = (modelData.duplicateId !== undefined ? modelData.duplicateId : modelData.display) || ""
-                            return resultsListRoot.isPinnedFunc(matchId)
-                        }
-                        accentColor: resultsListRoot.accentColor
-                        textColor: resultsListRoot.textColor
-                        // trFunc removed
+                    // Expanded News Content
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        visible: isRSS && delegateRoot.isExpanded
+                        spacing: 8
                         
-                        onToggled: (pinned) => {
-                            var matchId = (modelData.duplicateId !== undefined ? modelData.duplicateId : modelData.display) || ""
-                            resultsListRoot.togglePinFunc({
-                                display: modelData.display || "",
-                                decoration: modelData.decoration || "application-x-executable",
-                                category: modelData.category || "Diğer",
-                                matchId: matchId,
-                                filePath: modelData.url || ""
-                            })
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Qt.rgba(resultsListRoot.textColor.r, resultsListRoot.textColor.g, resultsListRoot.textColor.b, 0.1)
+                        }
+                        
+                        Text {
+                            id: descriptionLabel
+                            text: modelData.description || ""
+                            color: resultsListRoot.textColor
+                            font.pixelSize: 13
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                            maximumLineCount: 5
+                            elide: Text.ElideRight
+                            opacity: 0.85
+                            lineHeight: 1.2
+                        }
+                        
+                        RowLayout {
+                            spacing: 12
+                            Button {
+                                text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Haberi Oku")
+                                icon.name: "internet-services"
+                                onClicked: if (modelData.url) Qt.openUrlExternally(modelData.url)
+                            }
+                            
+                            Button {
+                                text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Paylaş")
+                                icon.name: "mail-send"
+                                flat: true
+                                onClicked: logic.runShellCommand("echo -n '" + modelData.url + "' | xclip -selection clipboard")
+                            }
                         }
                     }
                 }
@@ -231,124 +214,27 @@ ScrollView {
                 cursorShape: Qt.PointingHandCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 
-                // DRAG
-                drag.target: resultItem
-                drag.threshold: 10
-                
                 onClicked: (mouse) => {
-                    var matchId = (modelData.duplicateId !== undefined ? modelData.duplicateId : modelData.display) || ""
-                    var filePath = (modelData.url && modelData.url.toString) ? modelData.url.toString() : (modelData.url || "")
-                    var subtext = modelData.subtext || ""
-                    // Handle urls array if present
-                    var urls = modelData.urls || []
-                    
-                    if (filePath === "" && urls.length > 0) {
-                        filePath = urls[0].toString()
+                    if (mouse.button === Qt.LeftButton && isRSS) {
+                        delegateRoot.isExpanded = !delegateRoot.isExpanded
+                        return
                     }
                     
-                    if (filePath === "") {
-                        if (subtext.indexOf("/") === 0) filePath = "file://" + subtext
-                        else if (subtext.indexOf("file://") === 0) filePath = subtext
-                    }
+                    var matchId = modelData.duplicateId || modelData.display || ""
+                    var filePath = (modelData.url || "").toString()
                     
                     if (mouse.button === Qt.RightButton) {
-                        // Right-click: show context menu
-                        var cat = modelData.category || ""
-                        var isApp = (cat === "Uygulamalar" || cat === "Applications" || cat === "System Settings")
-                        
                         resultsListRoot.itemRightClicked({
                             display: modelData.display || "",
                             decoration: modelData.decoration || "application-x-executable",
-                            category: cat,
+                            category: modelData.category || "",
                             matchId: matchId,
                             filePath: filePath,
-                            isApplication: isApp,
-                            uuid: "" // Live sonuçlar için boş bıraktığımıza emin olalım
-                        }, mouse.x + resultItem.x, mouse.y + resultItem.y)
+                            isApplication: (modelData.category === "Applications"),
+                            uuid: ""
+                        }, mouse.x + delegateRoot.x, mouse.y + delegateRoot.y)
                     } else {
-                        // Left-click: open item
-                        resultsListRoot.itemClicked(index, modelData.display || "", modelData.decoration || "application-x-executable", modelData.category || "Diğer", matchId, filePath)
-                    }
-                }
-
-                // File Preview Tooltip
-                ToolTip {
-                    id: previewTooltip
-                    visible: resultMouseArea.containsMouse && (modelData.url || "").length > 0 && resultsListRoot.previewEnabled
-                    delay: 500
-                    timeout: 10000
-                    x: resultItem.width + 10
-                    y: (resultItem.height - height) / 2
-                    
-                    contentItem: Column {
-                        spacing: 6
-                        
-                        // Title
-                        Text {
-                            text: modelData.display || ""
-                            font.bold: true
-                            font.pixelSize: 12
-                            color: resultsListRoot.textColor
-                        }
-                        
-                        // Thumbnail for images
-                        Image {
-                            source: {
-                                var url = modelData.url || "";
-                                if (url.length === 0) return "";
-                                var path = decodeURIComponent(url.replace("file://", ""));
-                                var ext = path.split('.').pop().toLowerCase();
-                                var showPreview = false
-                                
-                                if (resultsListRoot.previewSettings.images) {
-                                    var imageExts = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff"]
-                                    if (imageExts.indexOf(ext) >= 0) showPreview = true
-                                }
-                                if (!showPreview && resultsListRoot.previewSettings.videos) {
-                                    var videoExts = ["mp4", "mkv", "avi", "webm", "mov", "flv", "wmv", "mpg", "mpeg"]
-                                    if (videoExts.indexOf(ext) >= 0) showPreview = true
-                                }
-                                if (!showPreview && resultsListRoot.previewSettings.documents) {
-                                    var docExts = ["pdf", "odt", "docx", "pptx", "xlsx", "ods", "csv", "xls", "txt", "md"]
-                                    if (docExts.indexOf(ext) >= 0) showPreview = true
-                                }
-                                
-                                if (showPreview) return "image://preview/" + path
-                                return ""
-                            }
-                            width: source.length > 0 ? Math.min(150, sourceSize.width) : 0
-                            height: source.length > 0 ? Math.min(100, sourceSize.height) : 0
-                            fillMode: Image.PreserveAspectFit
-                            visible: source.length > 0
-                            cache: true
-                            asynchronous: true
-                        }
-                        
-                        // Path
-                        Text {
-                            text: {
-                                var path = (modelData.url && modelData.url.toString) ? modelData.url.toString() : "";
-                                if (path && path.length > 0) {
-                                    path = path.replace("file://", "");
-                                    // Remove /home/user/ prefix using regex
-                                    path = path.replace(/^\/home\/[^\/]+\//, "");
-                                    return path;
-                                }
-                                return modelData.url || "";
-                            }
-                            font.pixelSize: 10
-                            color: Qt.rgba(resultsListRoot.textColor.r, resultsListRoot.textColor.g, resultsListRoot.textColor.b, 0.7)
-                            wrapMode: Text.WrapAnywhere
-                            width: Math.min(300, implicitWidth)
-                            visible: (modelData.url || "").length > 0
-                        }
-                    }
-                    
-                    background: Rectangle {
-                        color: Kirigami.Theme.backgroundColor
-                        border.color: resultsListRoot.accentColor
-                        border.width: 1
-                        radius: 6
+                        resultsListRoot.itemClicked(index, modelData.display || "", modelData.decoration || "application-x-executable", modelData.category || "Other", matchId, filePath)
                     }
                 }
             }
@@ -364,10 +250,8 @@ ScrollView {
         }
     }
     
-    // Expose count for external use
     property int count: resultsList.count
     
-    // Navigate methods
     function moveUp() {
         if (currentIndex > 0) currentIndex--
     }

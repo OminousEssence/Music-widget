@@ -37,86 +37,105 @@ Item {
         
         // Step 1: Collect raw items and filter hidden categories
         var rawItems = [];
-        var isFileOnlyMode = searchText.toLowerCase().startsWith("file:/");
+        var lowerSearch = searchText.toLowerCase();
+        var isFileOnlyMode = lowerSearch.startsWith("file:/");
+        var isRSSOnlyMode = lowerSearch.startsWith("rss:");
         
-        for (var i = 0; i < rawDataProxy.count; i++) {
-            var item = rawDataProxy.itemAt(i);
-            if (!item) continue;
-            var cat = item.category || "Diğer";
-            
-            // Filter hidden categories
-            if (!CategoryManager.isCategoryVisible(categorySettings, cat)) {
-                continue;
-            }
-            
-            // --- FILTER CHIPS LOGIC ---
-            if (dataManager.activeFilter !== "Tümü") {
-                var filter = dataManager.activeFilter;
-                var c = cat.toLowerCase();
-                var d = (item.decoration || "").toString().toLowerCase();
-                var u = (item.url || "").toString().toLowerCase();
-                var ext = u.substring(u.lastIndexOf(".") + 1);
-                var shouldKeep = false;
+        if (!isRSSOnlyMode) {
+            for (var i = 0; i < rawDataProxy.count; i++) {
+                var item = rawDataProxy.itemAt(i);
+                if (!item) continue;
+                var cat = item.category || "Diğer";
                 
-                if (filter === "Belgeler") {
-                    var docExts = ["pdf", "doc", "docx", "odt", "txt", "md", "xls", "xlsx", "ppt", "pptx", "ods", "csv"];
-                    shouldKeep = (c.indexOf("belge") !== -1 || c.indexOf("document") !== -1 || c.indexOf("text") !== -1 || 
-                                 d.indexOf("document") !== -1 || d.indexOf("text") !== -1 || docExts.indexOf(ext) !== -1);
-                } else if (filter === "Resimler") {
-                    var imgExts = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff"];
-                    shouldKeep = (c.indexOf("resim") !== -1 || c.indexOf("image") !== -1 || c.indexOf("picture") !== -1 || 
-                                 c.indexOf("photo") !== -1 || c.indexOf("görsel") !== -1 || c.indexOf("görüntü") !== -1 ||
-                                 d.indexOf("image") !== -1 || d.indexOf("photo") !== -1 || d.indexOf("picture") !== -1 ||
-                                 imgExts.indexOf(ext) !== -1);
-                } else if (filter === "Klasörler") {
-                    shouldKeep = (c.indexOf("klasör") !== -1 || c.indexOf("folder") !== -1 || c.indexOf("yerler") !== -1 || 
-                                 c.indexOf("place") !== -1 || d.indexOf("folder") !== -1 || u.endsWith("/"));
-                } else if (filter === "Uygulamalar") {
-                    shouldKeep = (c.indexOf("uygulama") !== -1 || c.indexOf("application") !== -1 || c.indexOf("app") !== -1 || 
-                                 c.indexOf("program") !== -1 || d.indexOf("app") !== -1 || u.endsWith(".desktop"));
-                } else if (filter === "Web") {
-                    shouldKeep = (c.indexOf("web") !== -1 || c.indexOf("bookmark") !== -1 || c.indexOf("yer imi") !== -1 || 
-                                 c.indexOf("internet") !== -1 || c.indexOf("browser") !== -1 || d.indexOf("globe") !== -1 || 
-                                 d.indexOf("web") !== -1 || u.startsWith("http") || u.startsWith("www"));
+                // Filter hidden categories
+                if (!CategoryManager.isCategoryVisible(categorySettings, cat)) {
+                    continue;
                 }
                 
-                if (!shouldKeep) continue;
+                // --- FILTER CHIPS LOGIC ---
+                if (dataManager.activeFilter !== "Tümü") {
+                    var filter = dataManager.activeFilter;
+                    var c = cat.toLowerCase();
+                    var d = (item.decoration || "").toString().toLowerCase();
+                    var u = (item.url || "").toString().toLowerCase();
+                    var ext = u.substring(u.lastIndexOf(".") + 1);
+                    var shouldKeep = false;
+                    
+                    if (filter === "Belgeler") {
+                        var docExts = ["pdf", "doc", "docx", "odt", "txt", "md", "xls", "xlsx", "ppt", "pptx", "ods", "csv"];
+                        shouldKeep = (c.indexOf("belge") !== -1 || c.indexOf("document") !== -1 || c.indexOf("text") !== -1 || 
+                                     d.indexOf("document") !== -1 || d.indexOf("text") !== -1 || docExts.indexOf(ext) !== -1);
+                    } else if (filter === "Resimler") {
+                        var imgExts = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff"];
+                        shouldKeep = (c.indexOf("resim") !== -1 || c.indexOf("image") !== -1 || c.indexOf("picture") !== -1 || 
+                                     c.indexOf("photo") !== -1 || c.indexOf("görsel") !== -1 || c.indexOf("görüntü") !== -1 ||
+                                     d.indexOf("image") !== -1 || d.indexOf("photo") !== -1 || d.indexOf("picture") !== -1 ||
+                                     imgExts.indexOf(ext) !== -1);
+                    } else if (filter === "Klasörler") {
+                        shouldKeep = (c.indexOf("klasör") !== -1 || c.indexOf("folder") !== -1 || c.indexOf("yerler") !== -1 || 
+                                     c.indexOf("place") !== -1 || d.indexOf("folder") !== -1 || u.endsWith("/"));
+                    } else if (filter === "Uygulamalar") {
+                        shouldKeep = (c.indexOf("uygulama") !== -1 || c.indexOf("application") !== -1 || c.indexOf("app") !== -1 || 
+                                     c.indexOf("program") !== -1 || d.indexOf("app") !== -1 || u.endsWith(".desktop"));
+                    } else if (filter === "Web") {
+                        shouldKeep = (c.indexOf("web") !== -1 || c.indexOf("bookmark") !== -1 || c.indexOf("yer imi") !== -1 || 
+                                     c.indexOf("internet") !== -1 || c.indexOf("browser") !== -1 || d.indexOf("globe") !== -1 || 
+                                     d.indexOf("web") !== -1 || u.startsWith("http") || u.startsWith("www"));
+                    } else if (filter === "Haberler" || filter === "RSS") {
+                        shouldKeep = (c.indexOf("haber") !== -1 || c.indexOf("news") !== -1 || c.indexOf("rss") !== -1 || d.indexOf("news") !== -1);
+                    }
+                    
+                    if (!shouldKeep) continue;
+                }
+                
+                // FILE ONLY MODE FILTER
+                if (isFileOnlyMode) {
+                     var allowedCats = ["Files", "Dosyalar", "Folders", "Klasörler", "Documents", "Belgeler", 
+                                        "Images", "Resimler", "Audio", "Ses", "Video", "Videolar", "Places", "Yerler"];
+                     var isFileUrl = item.url && item.url.toString().startsWith("file://");
+                     var isAllowed = isFileUrl || allowedCats.indexOf(cat) !== -1;
+                     if (!isAllowed) continue;
+                }
+                
+                rawItems.push({
+                    display: item.display || "",
+                    decoration: IconMapper.getIconForUrl(item.url || "", item.decoration || "", cat),
+                    category: cat,
+                    url: item.url || "", 
+                    urls: item.urls || [],
+                    subtext: item.subtext || "",
+                    duplicateId: item.duplicateId || "",
+                    index: item.itemIndex
+                });
             }
+        }
+        
+        // Step 1.5: RSS Feeds Integration
+        var activeF = dataManager.activeFilter
+        if (isRSSOnlyMode || logic.rssEnabled && (activeF === "Tümü" || activeF === "All" || activeF === "Web" || activeF === "RSS" || activeF === "Haberler")) {
+            var rssItems = (logic.rssCache && Array.isArray(logic.rssCache)) ? logic.rssCache : [];
+            var rssQuery = isRSSOnlyMode ? lowerSearch.substring(4).trim() : lowerSearch;
             
-            // FILE ONLY MODE FILTER
-            if (isFileOnlyMode) {
-                 // Check if category implies file/folder (Folders, Documents, Audio, Video, Files, Yerler, Klasörler, Dosyalar... etc)
-                 // Or we can check if it is NOT "Applications", "System Settings"...
-                 // A simple inclusive check:
-                 var allowedCats = ["Files", "Dosyalar", "Folders", "Klasörler", "Documents", "Belgeler", 
-                                    "Images", "Resimler", "Audio", "Ses", "Video", "Videolar", "Places", "Yerler"];
+            for (var r = 0; r < rssItems.length; r++) {
+                 var rssEntry = rssItems[r];
                  
-                 // Also handle "Diğer" / "Other" if it points to path?
-                 // Milou might return file paths as "Diğer" sometimes?
-                 // Safer to check item.url?
-                 var isFileUrl = item.url && item.url.toString().startsWith("file://");
-                 
-                 // If item IS NOT a file url AND category IS NOT in allowed list, skip it.
-                 var isAllowed = isFileUrl || allowedCats.indexOf(cat) !== -1;
-                 
-                 if (!isAllowed) continue;
+                 // Apply query filter for rss: mode
+                 if (isRSSOnlyMode && rssQuery.length > 0) {
+                      var title = (rssEntry.display || "").toLowerCase();
+                      var content = (rssEntry.indexedContent || "").toLowerCase();
+                      if (title.indexOf(rssQuery) === -1 && content.indexOf(rssQuery) === -1) continue;
+                 }
+
+                 if (CategoryManager.isCategoryVisible(categorySettings, rssEntry.category)) {
+                     rawItems.push(rssEntry);
+                 }
             }
-            
-            rawItems.push({
-                display: item.display || "",
-                decoration: IconMapper.getIconForUrl(item.url || "", item.decoration || "", cat),
-                category: cat,
-                url: item.url || "", 
-                urls: item.urls || [],
-                subtext: item.subtext || "",
-                duplicateId: item.duplicateId || "",
-                index: item.itemIndex
-            });
-            
-            // Debugging
-            if (dataManager.resultsModel.queryString !== "") {
-                console.log("FileSearch Matched Item:", item.display, " Category:", cat, " Icon:", item.decoration);
-            }
+        }
+        
+        // Final keyword filter for isRSSOnlyMode if just "rss:"
+        if (isRSSOnlyMode && lowerSearch === "rss:" && rawItems.length === 0) {
+            // Push all cached if empty and showing all
+             rawItems = (logic.rssCache && Array.isArray(logic.rssCache)) ? logic.rssCache : [];
         }
         
         // Step 2: Sort by priority and similarity

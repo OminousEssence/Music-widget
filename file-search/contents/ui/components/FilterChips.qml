@@ -29,7 +29,15 @@ Item {
             padding: 4
             
             Repeater {
-                model: ["Tümü", "Uygulamalar", "Belgeler", "Resimler", "Klasörler", "Web"]
+                model: [
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "All"),
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "Apps"),
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "Docs"),
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "Images"),
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "Folders"),
+                    i18nd("plasma_applet_com.mcc45tr.filesearch", "Web"),
+                    "RSS"
+                ]
                 delegate: Rectangle {
                     id: chip
                     width: chipText.implicitWidth + 24
