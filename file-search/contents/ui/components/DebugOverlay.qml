@@ -158,7 +158,8 @@ Rectangle {
                 }
                 
                 var content = JSON.stringify(dumpData, null, 2)
-                var b64 = Qt.btoa(unescape(encodeURIComponent(content)))
+                var encoded = unescape(encodeURIComponent(content))
+                var b64 = (typeof btoa === 'function') ? btoa(encoded) : Qt.btoa(encoded)
                 var cmd = 'sh -c "echo ' + b64 + ' | base64 -d > $HOME/' + filename + '"'
                 
                 executableDataSource.connectedSources = [cmd]

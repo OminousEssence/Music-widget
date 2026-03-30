@@ -15,7 +15,7 @@ PlasmoidItem {
 
     // --- Widget Size Constraints ---
     Layout.preferredWidth: 200
-    Layout.preferredHeight: (root.isInPanel && fullRep.badgeExpanded) ? 550 : 200
+    Layout.preferredHeight: (root.isInPanel && root.badgeExpanded) ? 550 : 200
     Layout.minimumWidth: 150
     Layout.minimumHeight: 150
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
@@ -239,6 +239,8 @@ PlasmoidItem {
     property int loopStatus: 0  // 0=None, 1=Track, 2=Playlist
     
     property real currentPosition: 0
+    
+    property bool badgeExpanded: false
     
     // Sync shuffle/loop/art from player
     Connections {
@@ -557,7 +559,8 @@ PlasmoidItem {
         id: fullRep
         anchors.fill: parent
         
-        readonly property bool badgeExpanded: modeLoader.item ? modeLoader.item.badgeExpanded : false
+        readonly property bool badgeExpanded: modeLoader.item && modeLoader.item.hasOwnProperty("badgeExpanded") ? !!modeLoader.item.badgeExpanded : false
+        onBadgeExpandedChanged: root.badgeExpanded = badgeExpanded
         
         // Mode Detection - Computed properties
         readonly property bool isWide: root.width > 300

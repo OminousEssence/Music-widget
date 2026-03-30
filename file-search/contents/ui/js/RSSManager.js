@@ -2,6 +2,29 @@
  * Shared RSS parsing and utility functions
  */
 
+function decodeBase64(str) {
+    if (!str) return "";
+    try {
+        // Use global atob if available (standard), otherwise fallback to Qt.atob
+        var decoded = (typeof atob === 'function') ? atob(str) : Qt.atob(str);
+        return decodeURIComponent(escape(decoded));
+    } catch (e) {
+        console.warn("RSSManager: Failed to decode base64:", e);
+        return "";
+    }
+}
+
+function encodeBase64(str) {
+    if (!str) return "";
+    try {
+        var encoded = unescape(encodeURIComponent(str));
+        return (typeof btoa === 'function') ? btoa(encoded) : Qt.btoa(encoded);
+    } catch (e) {
+        console.warn("RSSManager: Failed to encode base64:", e);
+        return "";
+    }
+}
+
 function unescapeHtml(text) {
     if (!text) return ""
     return text.replace(/&amp;/g, "&")

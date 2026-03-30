@@ -443,7 +443,7 @@ Item {
                                     var base = StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/.cache/com.mcc45tr.filesearch/rss"
                                     var path = RSSManager.getSourceFilePath(url, base)
                                     var json = JSON.stringify(entries)
-                                    var base64Json = Qt.btoa(unescape(encodeURIComponent(json)))
+                                    var base64Json = RSSManager.encodeBase64(json)
                                     
                                     executable.connectSource("mkdir -p '" + base + "' && (echo '" + base64Json + "' > '" + path + "')")
                                     
@@ -514,7 +514,7 @@ Item {
                                     property bool isSelected: isPresetSelected(modelData.url)
                                     text: modelData.name
                                     icon.name: isSelected ? "checkmark" : "list-add"
-                                    enabled: (isSelected || rssSources.length < 5)
+                                    enabled: (isSelected || rssSources.length < 30)
                                     checkable: true
                                     checked: isSelected
                                     onClicked: {

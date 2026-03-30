@@ -101,14 +101,14 @@ Item {
         anchors.margins: 2
         spacing: panelMode.layoutMode === 2 ? 5 : 10
         layoutDirection: Qt.LeftToRight
-
+ 
         // --- ALBUM ART THUMBNAIL (optional) ---
         Item {
             visible: panelMode.showAlbumArt
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: visible ? Math.min(panelMode.height, 28) : 0
             Layout.preferredHeight: Math.min(panelMode.height, 28)
-
+ 
             Rectangle {
                 id: artThumb
                 anchors.fill: parent
@@ -116,7 +116,7 @@ Item {
                 clip: true
                 color: panelMode.hasArt ? "transparent" : Kirigami.Theme.highlightColor
                 opacity: 0.85
-
+ 
                 Image {
                     anchors.fill: parent
                     source: panelMode.hasArt ? panelMode.artUrl : ""
@@ -124,7 +124,7 @@ Item {
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                 }
-
+ 
                 // Placeholder music note when no art
                 Text {
                     anchors.centerIn: parent
@@ -137,9 +137,9 @@ Item {
                 }
             }
         }
-
+ 
         // Spacers removed - buttons now anchor to edges in all modes
-
+ 
         // --- LEFT CONTROL GROUP (Visible in Right & Center Modes) ---
         Loader {
             id: leftControlsLoader
@@ -193,7 +193,7 @@ Item {
                 }
             }
         }
-
+ 
         // --- TEXT GROUP ---
         Item {
             id: textContainer
@@ -223,7 +223,7 @@ Item {
                     if (panelMode.layoutMode === 2) return Text.AlignHCenter
                     return Text.AlignLeft
                 }
-
+ 
                 // Title Section
                 Item {
                     id: titleItem
@@ -232,10 +232,10 @@ Item {
                     Layout.alignment: panelMode.layoutMode === 1 ? Qt.AlignRight : (panelMode.layoutMode === 2 ? Qt.AlignHCenter : Qt.AlignLeft)
                     visible: panelMode.showTitle
                     clip: true
-
+ 
                     readonly property bool overflows: titleMetrics.advanceWidth > parent.width
                     readonly property bool shouldScroll: panelMode.scrollingText && overflows
-
+ 
                     // Smooth Scroll Layer
                     Row {
                         id: titleSmoothRow
@@ -255,7 +255,7 @@ Item {
                             font: titleMetrics.font
                             verticalAlignment: Text.AlignVCenter
                         }
-
+ 
                         NumberAnimation on x {
                             id: titleSmoothAnim
                             from: 0
@@ -265,28 +265,34 @@ Item {
                             running: titleSmoothRow.visible
                         }
                     }
-
+ 
                     // Stepped Scroll / Static Layer
                     Text {
                         id: titleSteppedText
                         visible: !titleSmoothRow.visible
                         anchors.fill: parent
-                        text: parent.shouldScroll ? _charDisplayText : titleMetrics.text
                         color: Kirigami.Theme.textColor
                         font: titleMetrics.font
                         horizontalAlignment: textColumn.textAlign
                         verticalAlignment: Text.AlignVCenter
                         elide: parent.shouldScroll ? Text.ElideNone : Text.ElideRight
 
+                        Binding {
+                            target: titleSteppedText
+                            property: "text"
+                            value: titleItem.shouldScroll ? titleSteppedText._charDisplayText : titleMetrics.text
+                            delayed: true
+                        }
+ 
                         property string _charDisplayText: titleMetrics.text
                         property int _scrollIndex: 0
                         property string _scrollBuffer: titleMetrics.text + "   •   "
-
+ 
                         function updateScroll() {
                             _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
                             _charDisplayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
                         }
-
+ 
                         Timer {
                             interval: panelMode.scrollInterval
                             running: titleSteppedText.visible && titleItem.shouldScroll && !panelMode.smoothScrolling
@@ -296,7 +302,7 @@ Item {
                         }
                     }
                 }
-
+ 
                 // Artist Section
                 Item {
                     id: artistItem
@@ -305,10 +311,10 @@ Item {
                     Layout.alignment: panelMode.layoutMode === 1 ? Qt.AlignRight : (panelMode.layoutMode === 2 ? Qt.AlignHCenter : Qt.AlignLeft)
                     visible: panelMode.showArtist && panelMode.artist && panelMode.artist.trim() !== ""
                     clip: true
-
+ 
                     readonly property bool overflows: artistMetrics.advanceWidth > parent.width
                     readonly property bool shouldScroll: panelMode.scrollingText && overflows
-
+ 
                     // Smooth Scroll Layer
                     Row {
                         id: artistSmoothRow
@@ -330,7 +336,7 @@ Item {
                             font: artistMetrics.font
                             verticalAlignment: Text.AlignVCenter
                         }
-
+ 
                         NumberAnimation on x {
                             id: artistSmoothAnim
                             from: 0
@@ -340,13 +346,12 @@ Item {
                             running: artistSmoothRow.visible
                         }
                     }
-
+ 
                     // Stepped Scroll / Static Layer
                     Text {
                         id: artistSteppedText
                         visible: !artistSmoothRow.visible
                         anchors.fill: parent
-                        text: parent.shouldScroll ? _charDisplayText : artistMetrics.text
                         color: Kirigami.Theme.textColor
                         opacity: 0.8
                         font: artistMetrics.font
@@ -354,15 +359,22 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         elide: parent.shouldScroll ? Text.ElideNone : Text.ElideRight
 
+                        Binding {
+                            target: artistSteppedText
+                            property: "text"
+                            value: artistItem.shouldScroll ? artistSteppedText._charDisplayText : artistMetrics.text
+                            delayed: true
+                        }
+ 
                         property string _charDisplayText: artistMetrics.text
                         property int _scrollIndex: 0
                         property string _scrollBuffer: artistMetrics.text + "   •   "
-
+ 
                         function updateScroll() {
                             _scrollIndex = (_scrollIndex + 1) % _scrollBuffer.length
                             _charDisplayText = _scrollBuffer.substring(_scrollIndex) + _scrollBuffer.substring(0, _scrollIndex)
                         }
-
+ 
                         Timer {
                             interval: panelMode.scrollInterval
                             running: artistSteppedText.visible && artistItem.shouldScroll && !panelMode.smoothScrolling
@@ -443,7 +455,7 @@ Item {
             }
         }
     }
-
+ 
     WheelHandler {
         onWheel: (wheel) => {
             if (typeof root !== "undefined" && root.cfg_mouseWheelVolume) {

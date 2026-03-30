@@ -391,9 +391,8 @@ Item {
         executable.callbacks[cmd] = function(stdout) {
             try {
                 var raw = stdout.trim()
-                if (raw.length === 0) return callback([])
-                // Our cache is saved as Base64 in one line
-                var decodedJson = decodeURIComponent(escape(Qt.atob(raw)))
+                // Each cache is saved as Base64 in one line
+                var decodedJson = RSSManager.decodeBase64(raw)
                 var data = JSON.parse(decodedJson)
                 callback(data || [])
             } catch(e) { 
@@ -438,7 +437,7 @@ Item {
             // Save to file (Base64)
             var path = getSourceFilePath(source.url)
             var json = JSON.stringify(entries)
-            var base64Json = Qt.btoa(unescape(encodeURIComponent(json)))
+            var base64Json = RSSManager.encodeBase64(json)
             executable.connectSource("mkdir -p '" + rssCacheBase + "' && (echo '" + base64Json + "' > '" + path + "')")
             
             updateCombinedCache()

@@ -153,7 +153,10 @@ Item {
                                 anchors.fill: parent
                                 source: {
                                     if (entryData.isFolder) return "folder-boot"
-                                    if (entryData.customIcon && entryData.customIcon !== "") return entryData.customIcon;
+                                    if (entryData.customIcon && (typeof entryData.customIcon === 'string') && entryData.customIcon !== "") return entryData.customIcon;
+                                    
+                                    var t = (entryData.title || "").toLowerCase()
+                                    var i = (entryData.id || "").toLowerCase()
                                     
                                     if (t.includes("arch") || i.includes("arch")) return "distributor-logo-archlinux"
                                     if (t.includes("cachyos") || i.includes("cachyos")) return "distributor-logo-cachyos"
