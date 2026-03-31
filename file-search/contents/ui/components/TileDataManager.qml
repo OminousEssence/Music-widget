@@ -14,8 +14,19 @@ Item {
     property string searchText: ""
     property string activeFilter: "Tümü"
     
+    onSearchTextChanged: {
+        refreshDebouncer.restart()
+    }
+    
     onActiveFilterChanged: {
         refreshDebouncer.restart()
+    }
+    
+    Connections {
+        target: logic
+        function onRssCacheChanged() {
+            refreshDebouncer.restart()
+        }
     }
     
     property var categorizedData: []
@@ -231,7 +242,7 @@ Item {
     // Debounce timer for refreshGroups to prevent excessive updates
     Timer {
         id: refreshDebouncer
-        interval: 50
+        interval: 150
         onTriggered: dataManager.refreshGroups()
     }
 

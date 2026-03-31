@@ -27,6 +27,9 @@ Item {
             id: rowLayout
             spacing: 8
             padding: 4
+            x: (rowLayout.width < parent.width) ? (parent.width - rowLayout.width) / 2 : 0
+            
+            Behavior on x { NumberAnimation { duration: 150 } }
             
             Repeater {
                 model: [

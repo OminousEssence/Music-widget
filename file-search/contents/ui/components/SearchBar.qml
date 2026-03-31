@@ -75,7 +75,7 @@ PlasmaExtras.SearchField {
         }
         
         property int currentDuration: getInitialDuration()
-        property string currentTargetText: currentState === "placeholder" ? defaultText : (rssTitles.length > 0 && currentRssIndex >= 0 ? rssTitles[currentRssIndex].text : defaultText)
+        property string currentTargetText: currentState === "placeholder" ? defaultText : (rssTitles.length > 0 && currentRssIndex >= 0 ? "rss: " + rssTitles[currentRssIndex].text : defaultText)
         
         Text {
             id: currentLabel
@@ -238,15 +238,8 @@ PlasmaExtras.SearchField {
             }
         }
         
-        Component.onCompleted: {
-            if (logic && root.rssPlaceholderCycling) {
-                Qt.callLater(() => {
-                    if (!logic.rssCache || logic.rssCache.length === 0) {
-                        logic.syncAllRSS()
-                    }
-                })
-            }
-        }
+        // Initialization handled by LogicController directly
+
     }
     
     // Signals for navigation and control

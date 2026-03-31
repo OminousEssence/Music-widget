@@ -119,10 +119,42 @@ Item {
     // ===== SEARCH MODEL =====
     Milou.ResultsModel {
         id: resultsModel
-        queryString: getFilteredQuery(getEffectiveQuery(popupRoot.searchText), popupRoot.activeFilter)
+        // Use debounced query string to prevent stutter during rapid typing
+        queryString: popupRoot.delayedQueryString
         // Set a high limit to ensure we get plenty of results from the targeted runner
         limit: (popupRoot.activeFilter === "Tümü") ? 100 : 300
     }
+    
+    // Debounce the query string update to Milou
+    property string delayedQueryString: ""
+    Timer {
+        id: queryDebouncer
+        interval: 150
+        repeat: false
+        onTriggered: {
+            popupRoot.delayedQueryString = getFilteredQuery(getEffectiveQuery(popupRoot.searchText), popupRoot.activeFilter)
+        }
+    }
+    
+    onSearchTextChanged: {
+        queryDebouncer.restart()
+        // If query is cleared, update immediately for responsive feel
+        if (searchText.length === 0) {
+            queryDebouncer.stop()
+            delayedQueryString = ""
+        }
+        
+        // Auto-minimize pinned items logic
+        if (autoMinimizePinned && pinnedLoader.item) {
+            if (searchText.length > 0) {
+                pinnedLoader.item.isExpanded = false
+            } else {
+                pinnedLoader.item.isExpanded = true
+            }
+        }
+    }
+    
+    onActiveFilterChanged: queryDebouncer.restart()
     
     // ===== FUNCTIONS =====
     
@@ -476,15 +508,58 @@ Item {
         onViewModeChangeRequested: (mode) => requestViewModeChange(mode)
     }
 
+    // Filter Chips (Categories) - Moved to top
+    Item {
+        id: filterChipsWrapper
+        anchors.top: searchBar.visible ? searchBar.bottom : parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
+        
+        property bool isVisible: {
+            var hintsVisible = queryHintsLoader.active && queryHintsLoader.item && queryHintsLoader.item.visible;
+            return popupRoot.expanded && popupRoot.searchText.length > 0 && !isCommandOnlyQuery(popupRoot.searchText) && !hintsVisible;
+        }
+        
+        anchors.topMargin: isVisible ? 10 : 0
+        height: isVisible ? 32 : 0
+        opacity: isVisible ? 1 : 0
+        clip: true
+        visible: height > 0 || opacity > 0
+        
+        Behavior on height { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+        Behavior on anchors.topMargin { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+        
+        Loader {
+            anchors.fill: parent
+            active: filterChipsWrapper.visible
+            sourceComponent: FilterChips {
+                textColor: popupRoot.textColor
+                accentColor: popupRoot.accentColor
+                bgColor: popupRoot.bgColor
+                activeFilter: popupRoot.activeFilter
+                breezeStyle: popupRoot.plasmoidConfig ? (popupRoot.plasmoidConfig.filterChipStyle === 1) : false
+                
+                onFilterSelected: (name) => {
+                    popupRoot.activeFilter = name;
+                    popupRoot.requestFilterChange(name);
+                    tileData.startSearch();
+                }
+            }
+        }
+    }
+
     // Primary Preview (Loader)
     Loader {
         id: primaryResultPreviewLoader
-        anchors.top: isButtonMode ? searchBar.bottom : parent.top
-        anchors.topMargin: isButtonMode ? 0 : 8
+        anchors.top: filterChipsWrapper.bottom
+        anchors.topMargin: (active && isVisible) ? 8 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.margins: 12
-        asynchronous: true
+        asynchronous: false
         active: popupRoot.expanded && popupRoot.searchText.length > 0 && !isTileView
         
         sourceComponent: PrimaryResultPreview {
@@ -508,13 +583,13 @@ Item {
         id: queryHintsLoader
         anchors.top: (primaryResultPreviewLoader.active && primaryResultPreviewLoader.status === Loader.Ready) 
                      ? primaryResultPreviewLoader.bottom 
-                     : (searchBar.visible ? searchBar.bottom : parent.top)
-        anchors.topMargin: (primaryResultPreviewLoader.active || searchBar.visible) ? 8 : 8
+                     : filterChipsWrapper.bottom
+        anchors.topMargin: (active && isVisible) ? 8 : 8
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: 12
         anchors.rightMargin: 12
-        asynchronous: true
+        asynchronous: false
         active: popupRoot.expanded && popupRoot.searchText.length > 0
         sourceComponent: QueryHints {
             searchText: popupRoot.searchText
@@ -533,29 +608,21 @@ Item {
         }
     }
     
-    onSearchTextChanged: {
-        if (autoMinimizePinned && pinnedLoader.item) {
-            if (searchText.length > 0) {
-                pinnedLoader.item.isExpanded = false
-            } else {
-                pinnedLoader.item.isExpanded = true
-            }
-        }
-    }
+
 
     // Pinned Section (Loader)
     Loader {
         id: pinnedLoader
-        anchors.top: queryHintsLoader.active ? queryHintsLoader.bottom : (primaryResultPreviewLoader.active ? primaryResultPreviewLoader.bottom : (searchBar.visible ? searchBar.bottom : parent.top))
+        anchors.top: queryHintsLoader.active ? queryHintsLoader.bottom : (primaryResultPreviewLoader.active ? primaryResultPreviewLoader.bottom : filterChipsWrapper.bottom)
         anchors.topMargin: active ? 4 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: 12
         anchors.rightMargin: 12
-        asynchronous: true
+        asynchronous: false
         
         property var items: logic.visiblePinnedItems
-        active: items.length > 0 && showPinnedBar
+        active: showPinnedBar
         
         // Connections removed as binding handles updates now
         
@@ -615,57 +682,15 @@ Item {
         }
     }
 
-    // Filter Chips Wrapper
-    Item {
-        id: filterChipsWrapper
-        anchors.top: pinnedLoader.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
-        
-        property bool isVisible: {
-            var hintsVisible = queryHintsLoader.active && queryHintsLoader.item && queryHintsLoader.item.visible;
-            return popupRoot.expanded && popupRoot.searchText.length > 0 && !isCommandOnlyQuery(popupRoot.searchText) && !hintsVisible;
-        }
-        
-        // Sabitlenmiş öğeler ile alttaki içerik (filtreler, geçmiş veya sonuçlar) arasına boşluk ekleyelim.
-        // Buton modunda değilken kullanıcı 6px fazladan boşluk istedi (4+6=10).
-        anchors.topMargin: (isVisible || pinnedLoader.active) ? (isButtonMode ? 4 : 10) : 0
-        height: isVisible ? 32 : 0
-        opacity: isVisible ? 1 : 0
-        clip: true
-        visible: height > 0 || opacity > 0
-        
-        Behavior on height { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
-        Behavior on anchors.topMargin { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
-        
-        Loader {
-            anchors.fill: parent
-            active: filterChipsWrapper.visible
-            sourceComponent: FilterChips {
-                textColor: popupRoot.textColor
-                accentColor: popupRoot.accentColor
-                bgColor: popupRoot.bgColor
-                activeFilter: popupRoot.activeFilter
-                breezeStyle: popupRoot.plasmoidConfig ? (popupRoot.plasmoidConfig.filterChipStyle === 1) : false
-                
-                onFilterSelected: (filter) => {
-                    tileData.startSearch()
-                    popupRoot.activeFilter = filter
-                }
-            }
-        }
-    }
+
 
 
 
     // Result List View (Loader)
     Loader {
         id: resultsListLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom // Anchor to parent bottom
@@ -704,8 +729,8 @@ Item {
     // Result Tile View (Loader)
     Loader {
         id: tileResultsLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -743,8 +768,8 @@ Item {
     // Date/Clock View (Special "date:" query)
     Loader {
         id: dateViewLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom // Anchor to parent bottom
@@ -764,8 +789,8 @@ Item {
     // Help View ("help:" query)
     Loader {
         id: helpViewLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -795,8 +820,8 @@ Item {
     // Weather View ("weather:" query)
     Loader {
         id: weatherViewLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -814,8 +839,8 @@ Item {
     // Power View ("power:" query)
     Loader {
         id: powerViewLoader
-        anchors.top: filterChipsWrapper.bottom
-        anchors.topMargin: active ? 0 : 0
+        anchors.top: pinnedLoader.bottom
+        anchors.topMargin: active ? 6 : 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -843,14 +868,14 @@ Item {
     // History Container (Loader) - Show when no search text
     Loader {
          id: historyLoader
-         anchors.top: filterChipsWrapper.bottom
+         anchors.top: pinnedLoader.bottom
          anchors.left: parent.left
          anchors.right: parent.right
          anchors.bottom: parent.bottom // Anchor to parent bottom
          anchors.leftMargin: 12
          anchors.rightMargin: 12
          // History top margin is now fixed
-         anchors.topMargin: 0 
+         anchors.topMargin: 6 
          asynchronous: true
          anchors.bottomMargin: 12
          

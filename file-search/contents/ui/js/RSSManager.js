@@ -76,7 +76,7 @@ function parseRSS(xml, sourceName) {
             var desc = descMatch ? unescapeHtml(descMatch[2].trim().replace(/<[^>]*>?/gm, '')) : ""
             var full = fullMatch ? unescapeHtml(fullMatch[2].trim().replace(/<[^>]*>?/gm, '')) : ""
             
-            var indexedContent = (title + " " + desc + " " + full).substring(0, 1024)
+            var indexedContent = (title + " " + desc + " " + full)
             
             entries.push({
                 display: title,
@@ -87,6 +87,7 @@ function parseRSS(xml, sourceName) {
                 description: desc.substring(0, 300),
                 indexedContent: indexedContent,
                 duplicateId: "rss:" + link,
+                rawDate: dateStr,
                 index: -1
             })
         }

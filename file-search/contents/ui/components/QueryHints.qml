@@ -366,7 +366,12 @@ Rectangle {
         }
     }
 
-    Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+    Behavior on height { 
+        NumberAnimation { 
+            duration: Kirigami.Units.shortDuration
+            easing.type: Easing.OutCubic 
+        } 
+    }
     
     // Prefix Grid/List View
     ScrollView {

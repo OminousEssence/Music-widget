@@ -46,8 +46,8 @@ Item {
     readonly property real tileHeight: compactPinnedView ? (iconSize + 48) : (iconSize + 50)
 
     // Height calculation
-    implicitHeight: pinnedItems.length > 0 ? contentColumn.implicitHeight : 0
-    visible: pinnedItems.length > 0
+    implicitHeight: contentColumn.implicitHeight
+    visible: true
     
     // Calculate height of a single row (Item height + Top Margin + Bottom Padding)
     readonly property real singleRowHeight: (isTileView ? tileHeight : 40) + 12
@@ -81,7 +81,7 @@ Item {
                 }
                 
                 Text {
-                    text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Pinned Items") + " (" + pinnedSectionRoot.pinnedItems.length + ")"
+                    text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Pinned Items") + (pinnedSectionRoot.pinnedItems.length > 0 ? " (" + pinnedSectionRoot.pinnedItems.length + ")" : "")
                     font.pixelSize: 13
                     font.bold: true
                     color: Qt.rgba(pinnedSectionRoot.textColor.r, pinnedSectionRoot.textColor.g, pinnedSectionRoot.textColor.b, 0.7)
@@ -124,17 +124,19 @@ Item {
             clip: true
             
             Behavior on Layout.preferredHeight {
-                NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+                NumberAnimation { 
+                    duration: Kirigami.Units.shortDuration
+                    easing.type: Easing.OutCubic 
+                }
             }
             
             ColumnLayout {
                 id: pinnedContent
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: 8
                 anchors.rightMargin: 8
-                anchors.topMargin: 0
                 spacing: 4
                 
                 // Pinned items - List view
@@ -204,6 +206,26 @@ Item {
                                 }
                             }
                         }
+                    }
+                }
+                
+                // Empty state placeholder
+                Loader {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: active ? item.implicitHeight : 0
+                    active: pinnedSectionRoot.pinnedItems.length === 0
+                    visible: active
+                    
+                    sourceComponent: Text {
+                        text: i18nd("plasma_applet_com.mcc45tr.filesearch", "Öğeleri sabitlemek için üzerlerine sağ tıklayın")
+                        color: Qt.rgba(pinnedSectionRoot.textColor.r, pinnedSectionRoot.textColor.g, pinnedSectionRoot.textColor.b, 0.8)
+                        font.pixelSize: 10
+                        wrapMode: Text.Wrap
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
+                        padding: 2
                     }
                 }
                 
