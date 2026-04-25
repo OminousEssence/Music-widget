@@ -1,3 +1,8 @@
+Work in Progress!!
+
+<details>
+  <summary>Original Readme</summary>
+
 <p align="center">
   <img src="https://kde.org/stuff/clipart/logo/kde-logo-white-blue-rounded-source.svg" alt="KDE Logo" width="80"/>
 </p>
@@ -298,3 +303,5 @@ This project is licensed under the **GPL-3.0 License** - see the [LICENSE](./LIC
 <p align="center">
   <sub>Note: AI tools were used in the development of this project.</sub>
 </p>
+
+</details>
